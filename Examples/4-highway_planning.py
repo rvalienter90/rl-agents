@@ -31,8 +31,8 @@ from tqdm.notebook import trange
 # !pip install gym pyvirtualdisplay
 # !apt-get install -y xvfb python-opengl ffmpeg
 sys.path.insert(0, './highway-env/scripts/')
+# from scripts.utils import record_videos, show_videos, capture_intermediate_frames
 from scripts.utils import record_videos, capture_intermediate_frames
-
 """## Run an episode"""
 
 # Make environment

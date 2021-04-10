@@ -358,7 +358,7 @@ for episode in trange(3, desc="Test episodes"):
                              env.action_space.shape[0])
         obs, reward, done, info = env.step(action.numpy())
 env.close()
-show_video('video')
+# show_video('video')
 
 """## Limitations
 

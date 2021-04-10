@@ -1,8 +1,7 @@
-# Requirements Windows
-
+# Requirements Extra
+# fix https://github.com/openai/gym/issues/1925 , https://github.com/openai/gym/pull/2139  , or use gym==0.17.3
 tensorboard
 tensorboardX
-numpy==1.18.1
 Matplotlib
 pandas
 pytest
@@ -10,3 +9,12 @@ scipy
 docopt
 seaborn
 numba
+
+# notebooks
+tqdm
+ipython
+pyvirtualdisplay
+
+notebook
+ipywidgets
+
