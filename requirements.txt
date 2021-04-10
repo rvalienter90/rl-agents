@@ -1,0 +1,12 @@
+# Requirements Windows
+
+tensorboard
+tensorboardX
+numpy==1.18.1
+Matplotlib
+pandas
+pytest
+scipy
+docopt
+seaborn
+numba
