@@ -75,9 +75,9 @@ Run the learned policy for a few episodes.
 env = load_environment(env_config)
 # env.configure({"offscreen_rendering": True})
 agent = load_agent(agent_config, env)
-evaluation = Evaluation(env, agent, num_episodes=3, recover=True)
-# dir ="C:/Users/rvali/PycharmProjects/rl-agents/scripts/out/IntersectionEnv/DQNAgent/saved_models/robust_control.tar"
-# evaluation = Evaluation(env, agent, num_episodes=3, recover=dir)
+# evaluation = Evaluation(env, agent, num_episodes=3, recover=True)
+dir ="C:/Users/rvali/PycharmProjects/rl-agents/scripts/out/IntersectionEnv/DQNAgent/saved_models/robust_control.tar"
+evaluation = Evaluation(env, agent, num_episodes=3, recover=dir)
 evaluation.test()
 # show_videos(evaluation.run_directory)
 

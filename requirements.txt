@@ -13,8 +13,7 @@ numba
 # notebooks
 tqdm
 ipython
-pyvirtualdisplay
-
-notebook
-ipywidgets
+# pyvirtualdisplay
+# notebook
+# ipywidgets
 
