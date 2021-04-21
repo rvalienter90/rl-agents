@@ -1,32 +1,22 @@
 """
 Usage:
-  experiments evaluate [options]
+  experiments evaluate <environment> <agent> (--train|--test) [options]
+  experiments benchmark <benchmark> (--train|--test) [options]
   experiments -h | --help
 
 Options:
-  -h --help                    Show this screen.
-  --episodes <count>           Number of episodes [default: 10].
-  --no-display                 Disable environment, agent, and rewards rendering [default: False].
-  --name-from-config           Name the output folder from the corresponding config files
-  --processes <count>          Number of running processes [default: 4].
-  --recover                    Load model from the latest checkpoint [default: False].
-  --recover-from <file>        Load model from a given checkpoint.
-  --seed <str>                 Seed the environments and agents.
-  --train                      Train the agent
-  --test                       Test the agent
-  --episodes_test <count>      Number of episodes for test if test is set [default: 10].
-  --verbose                    Set log level to debug instead of info.
-  --repeat <times>             Repeat several times [default: 1].
-  --model_save_freq <count>    Save a model every n episodes [default: 500].
-  --video_save_freq <count>    Save a video every n episodes [default: 500].
-  --create_episode_log         Create episodes logs.
-  --individual_episode_log_level <count>   Individual logs 0: no individual log,2: individual log for controlled only,3: individual log for all vehicles [default: 2].
-  --create_timestep_log        Create timesteps logs.
-  --timestep_log_freq <count>  Save a timestep log every n episodes [default: 1].
-  --environment <str>          Environment config [default: configs/default/env.json].
-  --individual_reward_tensorboard   Save individual reward for each agent in tensorboard.
-  --name-from-envconfig           Name the output folder from the corresponding config files
-  --agent <str>                Agent config [default: None].
+  -h --help              Show this screen.
+  --episodes <count>     Number of episodes [default: 5].
+  --no-display           Disable environment, agent, and rewards rendering.
+  --name-from-config     Name the output folder from the corresponding config files
+  --processes <count>    Number of running processes [default: 4].
+  --recover              Load model from the latest checkpoint.
+  --recover-from <file>  Load model from a given checkpoint.
+  --seed <str>           Seed the environments and agents.
+  --train                Train the agent.
+  --test                 Test the agent.
+  --verbose              Set log level to debug instead of info.
+  --repeat <times>       Repeat several times [default: 1].
 """
 import datetime
 import os
@@ -50,7 +40,7 @@ def main():
     opts = docopt(__doc__)
     if opts['evaluate']:
         for _ in range(int(opts['--repeat'])):
-            evaluate(environment_config=opts['--environment'], agent_config=opts['--agent'], options=opts)
+            evaluate(opts['<environment>'], opts['<agent>'], opts)
     elif opts['benchmark']:
         benchmark(opts)
 
@@ -66,60 +56,30 @@ def evaluate(environment_config, agent_config, options):
     logger.configure(LOGGING_CONFIG)
     if options['--verbose']:
         logger.configure(VERBOSE_CONFIG)
-
+    env = load_environment(environment_config)
+    agent = load_agent(agent_config, env)
     run_directory = None
     if options['--name-from-config']:
         run_directory = "{}_{}_{}".format(Path(agent_config).with_suffix('').name,
                                   datetime.datetime.now().strftime('%Y%m%d-%H%M%S'),
                                   os.getpid())
     options['--seed'] = int(options['--seed']) if options['--seed'] is not None else None
-
-    env = load_environment(environment_config)
-    if agent_config == "None":
-        agent_config = env.config["agent_config"]
-        if "auto_tau" in agent_config["exploration"] and (agent_config["exploration"]["auto_tau"]):
-            agent_config["exploration"]["tau"] = env.config["policy_frequency"] * env.config["duration"] * int(
-                options['--episodes'] * env.config["controlled_vehicles"]) / 50
-    agent = load_agent(agent_config, env)
-
-    evaluation_train = Evaluation(env,
-                                  agent,
-                                  run_directory=run_directory,
-                                  num_episodes=int(options['--episodes']),
-                                  sim_seed=options['--seed'],
-                                  recover=options['--recover'] or options['--recover-from'],
-                                  display_env=not options['--no-display'],
-                                  display_agent=not options['--no-display'],
-                                  display_rewards=not options['--no-display'],
-                                  training=options['--train'],
-                                  options=options
-                                  )
-
+    evaluation = Evaluation(env,
+                            agent,
+                            run_directory=run_directory,
+                            num_episodes=int(options['--episodes']),
+                            sim_seed=options['--seed'],
+                            recover=options['--recover'] or options['--recover-from'],
+                            display_env=not options['--no-display'],
+                            display_agent=not options['--no-display'],
+                            display_rewards=not options['--no-display'])
     if options['--train']:
-        evaluation_train.train()
+        evaluation.train()
+    elif options['--test']:
+        evaluation.test()
     else:
-        evaluation_train.close()
-
-    if options['--test']:
-        agent_test = load_agent(agent_config, env)
-        if options['--train']:
-            agent_test = evaluation_train.agent
-        evaluation_test = Evaluation(env,
-                                     agent_test,
-                                     run_directory=run_directory,
-                                     num_episodes=int(options['--episodes_test']),
-                                     sim_seed=options['--seed'],
-                                     recover=options['--recover'] or options['--recover-from'],
-                                     display_env=not options['--no-display'],
-                                     display_agent=not options['--no-display'],
-                                     display_rewards=not options['--no-display'],
-                                     training=False,
-                                     options=options
-                                    )
-
-        evaluation_test.test()
-
-    return os.path.relpath(evaluation_train.monitor.directory)
+        evaluation.close()
+    return os.path.relpath(evaluation.monitor.directory)
 
 
 def benchmark(options):

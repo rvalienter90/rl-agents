@@ -1,0 +1,52 @@
+{
+  "info": "exp_merge_100 similar to IEEE_Access/exp_merge_complex_base  cooperative_flag True sympathy_flag True type= highway_env.vehicle.behavior.CustomVehicle controlled_vehicle False",
+  "additional_folder_name": "exp_merge_100",
+  "base_config": "configs/experiments/complex/exp_merge_complex_base.json",
+  "observation": {
+    "observation_config": {}
+  },
+  "reward": {
+    "cooperative_flag": true,
+    "sympathy_flag": true
+  },
+  "scenario": {},
+  "merging_vehicle": {
+    "vehicles_type": "highway_env.vehicle.behavior.CustomVehicle",
+    "controlled_vehicle": false
+  },
+  "agent_config": {
+    "__class__": "<class 'rl_agents.agents.deep_q_network.pytorch.DQNAgent'>",
+    "gamma": 0.95,
+    "n_steps": 1,
+    "batch_size": 32,
+    "batch_counter_wait": 20,
+    "memory_capacity": 10000,
+    "target_update": 200,
+    "double": true,
+    "calculate_replay_size": false,
+    "exploration": {
+      "method": "EpsilonGreedyLinear",
+      "tau": 50000,
+      "temperature": 1.0,
+      "final_temperature": 0.2,
+      "auto_tau": false
+    },
+    "model": {
+      "type": "ConvNet3D",
+      "activation": "RELU",
+      "head_mlp": {
+            "type": "MultiLayerPerceptron",
+            "layers": [128],
+            "activation": "RELU",
+            "reshape": "True"
+        }
+    },
+     "optimizer": {
+            "k": 5,
+            "lr": 0.0005,
+            "type": "ADAM",
+            "weight_decay": 0
+    }
+  },
+  "tracker_logging": true
+}

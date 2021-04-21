@@ -1,0 +1,11 @@
+{
+  "info": "Conv2D grid exp3000",
+  "additional_folder_name": "exp_merge_IROS9000",
+  "base_config": "configs/experiments/IROS/exp_merge_IROS_9000base-2.json",
+
+    "agent_config": {
+    "model": {
+      "type": "ConvNetStanfordMARLRes"
+    }
+    }
+}

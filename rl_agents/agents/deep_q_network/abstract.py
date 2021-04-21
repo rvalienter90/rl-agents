@@ -52,8 +52,8 @@ class AbstractDQNAgent(AbstractStochasticAgent, ABC):
         if not self.training:
             return
         if isinstance(state, tuple) and isinstance(action, tuple):  # Multi-agent setting
-            [self.memory.push(agent_state, agent_action, reward, agent_next_state, done, info)
-             for agent_state, agent_action, agent_next_state in zip(state, action, next_state)]
+            [self.memory.push(agent_state, agent_action, agent_reward, agent_next_state, done, info)
+             for agent_state, agent_action, agent_reward, agent_next_state in zip(state, action, reward, next_state)]
         else:  # Single-agent setting
             self.memory.push(state, action, reward, next_state, done, info)
         batch = self.sample_minibatch()
@@ -77,6 +77,7 @@ class AbstractDQNAgent(AbstractStochasticAgent, ABC):
         if isinstance(state, tuple):
             return tuple(self.act(agent_state, step_exploration_time=False) for agent_state in state)
 
+        # TODO: reduce exploration fro multi-agent, do not update e
         # Single-agent setting
         values = self.get_state_action_values(state)
         self.exploration_policy.update(values)

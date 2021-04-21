@@ -1,0 +1,40 @@
+{
+  "__class__": "<class 'rl_agents.agents.deep_q_network.pytorch.DQNAgent'>",
+  "batch_size": 32,
+  "calculate_replay_size": false,
+  "device": "cuda:best",
+  "double": false,
+  "exploration": {
+    "final_temperature": 0.1,
+    "method": "EpsilonGreedy",
+    "tau": 10000,
+    "temperature": 1.0
+  },
+  "gamma": 0.99,
+  "loss_function": "l2",
+  "memory_capacity": 10000,
+  "model": {
+    "activation": "RELU",
+    "head_mlp": {
+      "activation": "RELU",
+      "in": null,
+      "layers": [],
+      "out": null,
+      "reshape": "True",
+      "type": "MultiLayerPerceptron"
+    },
+    "in_channels": 4,
+    "in_height": 500,
+    "in_width": 64,
+    "out": 3,
+    "type": "ConvNetAtari"
+  },
+  "n_steps": 1,
+  "optimizer": {
+    "k": 5,
+    "lr": 0.0005,
+    "type": "ADAM",
+    "weight_decay": 0
+  },
+  "target_update": 500
+}

@@ -55,6 +55,22 @@ def load_agent_config(config_path):
         agent_config = Configurable.rec_update(base_config, agent_config)
     return agent_config
 
+def load_environment_config(env_config):
+    """
+        Load an environment from a configuration file.
+
+    :param env_config: the configuration, or path to the environment configuration file
+    :return: the environment
+    """
+    if not isinstance(env_config, dict):
+        with open(env_config) as f:
+            env_config = json.loads(f.read())
+
+    if "base_config" in env_config:
+        base_config = load_environment_config(env_config["base_config"])
+        # del env_config["base_config"]
+        env_config = Configurable.rec_update(base_config, env_config)
+    return env_config
 
 def load_environment(env_config):
     """
@@ -64,15 +80,15 @@ def load_environment(env_config):
     :return: the environment
     """
     # Load the environment config from file
-    if not isinstance(env_config, dict):
-        with open(env_config) as f:
-            env_config = json.loads(f.read())
-
+    # if not isinstance(env_config, dict):
+    #     with open(env_config) as f:
+    #         env_config = json.loads(f.read())
+    env_config = load_environment_config(env_config)
     # Make the environment
     if env_config.get("import_module", None):
         __import__(env_config["import_module"])
     try:
-        env = gym.make(env_config['id'])
+        env = gym.make(env_config['id'], config=env_config)
         # Save env module in order to be able to import it again
         env.import_module = env_config.get("import_module", None)
     except KeyError:

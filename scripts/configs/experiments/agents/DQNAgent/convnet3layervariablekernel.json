@@ -1,0 +1,35 @@
+{
+  "__class__": "<class 'rl_agents.agents.deep_q_network.pytorch.DQNAgent'>",
+  "gamma": 0.95,
+  "double": false,
+  "n_steps": 1,
+  "batch_size": 32,
+  "memory_capacity": 30000,
+  "target_update": 500,
+  "calculate_replay_size": false,
+  "exploration": {
+    "method": "EpsilonGreedy",
+    "tau": 20000,
+    "temperature": 1.0,
+    "final_temperature": 0.05
+  },
+  "optimizer": {
+    "k": 5,
+    "lr": 0.0001,
+    "type": "ADAM",
+    "weight_decay": 0
+  },
+  "model": {
+    "type": "ConvNet3LayerVariableKernel",
+    "activation": "RELU",
+    "head_mlp": {
+      "type": "MultiLayerPerceptron",
+      "layers": [
+        256,
+        128
+      ],
+      "activation": "RELU",
+      "reshape": "True"
+    }
+  }
+}

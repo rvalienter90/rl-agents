@@ -24,11 +24,17 @@ class MonitorV2(Monitor):
     """
 
     def __init__(self, env, directory, video_callable=None, force=False, resume=True,
-                 write_upon_reset=False, uid=None, mode=None):
+                 write_upon_reset=False, uid=None, mode=None, options=None):
         # path-like objects only supported since python 3.6,
         # see https://python.readthedocs.io/en/stable/library/os.path.html#os.path.exists
         directory = str(directory)
         super(MonitorV2, self).__init__(env, directory, video_callable, force, resume, write_upon_reset, uid, mode)
+
+        if self.options != None:
+            self.video_callable = self.is_episode_selected_for_videosave
+
+    def _video_enabled(self):
+        return self.is_episode_selected_for_videosave()
 
     def _start(self, directory, video_callable=None, force=False, resume=False, write_upon_reset=False, uid=None,
                mode=None):
@@ -70,6 +76,32 @@ class MonitorV2(Monitor):
         :return: whether this episode was selected for rendering and model saving
         """
         return self._video_enabled()
+
+    def is_episode_selected_for_modelsave(self):
+        """
+        :return: whether this episode was selected model saving
+        """
+        check_num = int(self.options['--model_save_freq'])
+        return self.episode_id % check_num == 0 or self.options['--episodes'] == self.episode_id
+
+    def is_episode_selected_for_videosave(self):
+        """
+        :return: whether this episode was selected for rendering and model saving
+        """
+        check_num = int(self.options['--video_save_freq'])
+        return self.episode_id % check_num == 0 or self.options['--episodes'] == (self.episode_id)
+
+    def step(self, action):
+
+        self._before_step(action)
+        observation, reward, done, info = self.env.step(action)
+        if isinstance(reward, tuple):  # Multi-agent setting Local state
+            avg = sum(reward) / len(reward)
+            done = self._after_step(observation, sum(reward), done, info)
+        else:
+            done = self._after_step(observation, reward, done, info)
+
+        return observation, reward, done, info
 
     @property
     def monitor_id(self):

@@ -25,6 +25,77 @@ configs/IntersectionEnv/env.json
 configs/IntersectionEnv/agents/DQNAgent/ego_attention_2h.json 
 --train --episodes=4000 --name-from-config
 
+
+evaluate
+--environment
+configs/IntersectionEnv/env.json 
+--agent
+configs/IntersectionEnv/agents/DQNAgent/ego_attention_2h.json
+--no-display
+--train
+--episodes
+4000
+--test
+--episodes_test
+400
+--video_save_freq
+100
+--model_save_freq
+1000
+--name-from-envconfig
+--create_episode_log
+--individual_episode_log_level
+2
+
 ## Visualize the results
 tensorboard --logdir out/IntersectionEnv
 or python analyze.py run out/IntersectionEnv/DQNAgent/
+
+
+## Highway
+evaluate 
+configs/HighwayEnv/env.json 
+configs/HighwayEnv/agents/DQNAgent/dqn.json 
+--train --episodes=4000 --name-from-config
+
+evaluate
+--environment
+configs/HighwayEnv/env.json
+--agent
+configs/HighwayEnv/agents/DQNAgent/ddqn.json
+--no-display
+--train
+--episodes
+4000
+--test
+--episodes_test
+400
+--video_save_freq
+100
+--model_save_freq
+1000
+--name-from-envconfig
+--create_episode_log
+--individual_episode_log_level
+2
+
+
+# Multi env
+evaluate
+--no-display
+--train
+--episodes
+1000
+--test
+--episodes_test
+50
+--video_save_freq
+100
+--model_save_freq
+500
+--create_episode_log
+--individual_episode_log_level
+2
+--environment
+configs/experiments/complex/exp_merge_complex_300.json
+--name-from-envconfig

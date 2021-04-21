@@ -15,8 +15,12 @@ from rl_agents.utils import near_split, zip_with_singletons
 from rl_agents.configuration import serialize
 from rl_agents.trainer.graphics import RewardViewer
 from rl_agents.trainer.monitor import MonitorV2
+# Modifications
+import time
+from rl_agents.trainer.log_creator import LogCreator
 
 logger = logging.getLogger(__name__)
+
 
 
 class Evaluation(object):
@@ -42,7 +46,10 @@ class Evaluation(object):
                  display_env=True,
                  display_agent=True,
                  display_rewards=True,
-                 close_env=True):
+                 close_env=True,
+                 model = None,
+                 options=None,
+                 ):
         """
 
         :param env: The environment to be solved, possibly wrapping an AbstractEnv environment
@@ -69,17 +76,37 @@ class Evaluation(object):
         self.close_env = close_env
         self.display_env = display_env
 
+        # Modifications
+        self.env.options = options
+        self.options = options
+
         self.directory = Path(directory or self.default_directory)
-        self.run_directory = self.directory / (run_directory or self.default_run_directory)
+        if self.options["--name-from-envconfig"]:
+            exp_json = options["--environment"].split('/')[-1]
+            default_run_directory = self.default_run_directory + "_" + exp_json.split('.')[0]
+            if training:
+                default_run_directory = os.path.join("train", default_run_directory)
+            else:
+                default_run_directory = os.path.join("test", default_run_directory + "-test")
+        else:
+            default_run_directory = self.default_run_directory
+
+        self.run_directory = self.directory / (run_directory or default_run_directory)
+
         self.monitor = MonitorV2(env,
                                  self.run_directory,
                                  video_callable=(None if self.display_env else False))
+
+        self.test_stable_baseline = True
         self.episode = 0
-        self.writer = SummaryWriter(str(self.run_directory))
-        self.agent.set_writer(self.writer)
-        self.agent.evaluation = self
-        self.write_logging()
-        self.write_metadata()
+
+
+        if not self.test_stable_baseline:
+            self.writer = SummaryWriter(str(self.run_directory))
+            self.agent.set_writer(self.writer)
+            self.agent.evaluation = self
+            self.write_logging()
+            self.write_metadata()
         self.filtered_agent_stats = 0
         self.best_agent_stats = -np.infty, 0
 
@@ -101,6 +128,22 @@ class Evaluation(object):
         if display_rewards:
             self.reward_viewer = RewardViewer()
         self.observation = None
+
+        # Modifications
+        self.episode_start_time = 0
+        self.episode_length = None
+        self.episode_info = None
+        self.create_episode_log = options["--create_episode_log"]
+        self.individual_episode_log_level = int(options["--individual_episode_log_level"])
+        self.create_timestep_log = options["--create_timestep_log"]
+        self.timestep_log_freq = int(options["--timestep_log_freq"])
+        self.individual_reward_tensorboard = options["--individual_reward_tensorboard"]
+        self.log_creator = None
+        self.rewards = None
+        self.rewards_averaged_over_agents = None
+
+        if self.test_stable_baseline:
+            self.model = model
 
     def train(self):
         self.training = True
@@ -126,17 +169,37 @@ class Evaluation(object):
         self.run_episodes()
         self.close()
 
+
     def run_episodes(self):
+        if self.create_episode_log:
+            self.log_creator = LogCreator(self)
+
         for self.episode in range(self.num_episodes):
+            self.episode_start_time = time.time()
+
+            if (self.num_episodes - self.episode) < 30:
+                self.create_timestep_log = True
+                self.monitor.options['--video_save_freq'] = 1
+
             # Run episode
             terminal = False
-            self.seed(self.episode)
+            if not self.test_stable_baseline:
+                self.seed(self.episode)
             self.reset()
-            rewards = []
+
             while not terminal:
                 # Step until a terminal step is reached
-                reward, terminal = self.step()
-                rewards.append(reward)
+                reward, terminal, info = self.step()
+
+                # in multiagent setup reward is a tuple
+                if isinstance(reward, tuple):
+                    self.rewards_averaged_over_agents.append(sum(reward) / len(reward))
+                else:
+                    self.rewards_averaged_over_agents.append(reward)
+                self.rewards.append(reward)
+
+                # this is a list of dictionaries, length of the list should be equal to the length of episode
+                self.episode_info.append(info)
 
                 # Catch interruptions
                 try:
@@ -146,15 +209,24 @@ class Evaluation(object):
                     pass
 
             # End of episode
-            self.after_all_episodes(self.episode, rewards)
-            self.after_some_episodes(self.episode, rewards)
+            self.after_all_episodes(self.episode, self.rewards)
+            self.after_some_episodes(self.episode, self.rewards)
 
     def step(self):
         """
             Plan a sequence of actions according to the agent policy, and step the environment accordingly.
         """
         # Query agent for actions sequence
-        actions = self.agent.plan(self.observation)
+        if self.test_stable_baseline:
+            action, _ = self.model.predict(self.observation)
+            # a =int(action)
+            # b =action.astype(int)
+            actions = [int(action.astype(int))]
+            # print(actions)
+            # print(type(actions))
+        else:
+            actions = self.agent.plan(self.observation)
+
         if not actions:
             raise Exception("The agent did not plan any action")
 
@@ -169,12 +241,13 @@ class Evaluation(object):
         self.observation, reward, terminal, info = self.monitor.step(action)
 
         # Record the experience.
-        try:
-            self.agent.record(previous_observation, action, reward, self.observation, terminal, info)
-        except NotImplementedError:
-            pass
+        if not self.test_stable_baseline:
+            try:
+                self.agent.record(previous_observation, action, reward, self.observation, terminal, info)
+            except NotImplementedError:
+                pass
 
-        return reward, terminal
+        return reward, terminal, info
 
     def run_batched_episodes(self):
         """
@@ -187,10 +260,10 @@ class Evaluation(object):
         batch_sizes = near_split(self.num_episodes * episode_duration, size_bins=self.agent.config["batch_size"])
         self.agent.reset()
         for batch, batch_size in enumerate(batch_sizes):
-            logger.info("[BATCH={}/{}]---------------------------------------".format(batch+1, len(batch_sizes)))
-            logger.info("[BATCH={}/{}][run_batched_episodes] #samples={}".format(batch+1, len(batch_sizes),
+            logger.info("[BATCH={}/{}]---------------------------------------".format(batch + 1, len(batch_sizes)))
+            logger.info("[BATCH={}/{}][run_batched_episodes] #samples={}".format(batch + 1, len(batch_sizes),
                                                                                  len(self.agent.memory)))
-            logger.info("[BATCH={}/{}]---------------------------------------".format(batch+1, len(batch_sizes)))
+            logger.info("[BATCH={}/{}]---------------------------------------".format(batch + 1, len(batch_sizes)))
             # Save current agent
             model_path = self.save_agent_model(identifier=batch)
 
@@ -307,21 +380,81 @@ class Evaluation(object):
             pass
 
     def after_all_episodes(self, episode, rewards):
-        rewards = np.array(rewards)
-        gamma = self.agent.config.get("gamma", 1)
-        self.writer.add_scalar('episode/length', len(rewards), episode)
-        self.writer.add_scalar('episode/total_reward', sum(rewards), episode)
-        self.writer.add_scalar('episode/return', sum(r*gamma**t for t, r in enumerate(rewards)), episode)
-        self.writer.add_histogram('episode/rewards', rewards, episode)
-        logger.info("Episode {} score: {:.1f}".format(episode, sum(rewards)))
+        rewards_individual_agents = np.array(self.rewards)
+        rewards_averaged_over_agents = np.array(self.rewards_averaged_over_agents)
+        self.episode_length = rewards_individual_agents.shape[0]
+        if len(rewards_individual_agents.shape) > 1:
+            controlled_vehicle_count = rewards_individual_agents.shape[1]
+        else:
+            controlled_vehicle_count = 1
+        assert controlled_vehicle_count == len(self.env.controlled_vehicles), \
+            "Length of each row in reward should be equal to the number of controlled vehicles"
+
+
+        reward_total_episode = sum(rewards_averaged_over_agents)
+        if not self.test_stable_baseline:
+            self.writer.add_scalar('episode/length', self.episode_length, episode)
+            self.writer.add_scalar('episode/total_reward', reward_total_episode, episode)
+
+        if self.individual_reward_tensorboard:
+            # logging individual rewards for each controlled_vehicle
+            individual_rewards_dict = {}
+            individual_rewards_title = f'individual_stats/agent_rewards'
+            for n in range(controlled_vehicle_count):
+                agent_name = 'agent' + str(n + 1)
+                agent_reward_array = sum(rewards_individual_agents[:, n])
+                individual_rewards_dict[agent_name] = agent_reward_array
+            self.writer.add_scalars(individual_rewards_title, individual_rewards_dict, episode)
+
+        if not self.test_stable_baseline:
+            gamma = self.agent.config.get("gamma", 1)
+            self.writer.add_scalar('episode/return',
+                                   sum(r * gamma ** t for t, r in enumerate(rewards_averaged_over_agents)), episode)
+            self.writer.add_histogram('episode/rewards', rewards_averaged_over_agents, episode)
+
+        # Create raw logfiles
+        if self.create_episode_log:
+            logged_info = self.log_creator.episode_info_logger(episode)
+            # Adding logged info to TensorBoard
+            if not self.test_stable_baseline:
+                self.writer.add_scalar('episode/mission_time', logged_info['mission_time'], episode)
+
+                self.writer.add_scalar('episode_average_speeds/episode_average_speed_all',
+                                       logged_info['episode_average_speed_all'], episode)
+                self.writer.add_scalar('episode_average_speeds/episode_average_speed_controlled',
+                                       logged_info['episode_average_speed_controlled'], episode)
+                self.writer.add_scalar('episode_average_speeds/episode_average_speed_human',
+                                       logged_info['episode_average_speed_human'], episode)
+
+                if self.log_creator.log_distance:
+                    self.writer.add_scalar('episode_average_distances/episode_average_distance_all',
+                                           logged_info['episode_average_distance_all'], episode)
+                    self.writer.add_scalar('episode_average_distances/episode_average_distance_controlled',
+                                           logged_info['episode_average_distance_controlled'], episode)
+                    self.writer.add_scalar('episode_average_distances/episode_average_distance_human',
+                                           logged_info['episode_average_distance_human'], episode)
+
+        # Calculate episode ET in ms
+        episode_elapsed_time = 1000 * (time.time() - self.episode_start_time)
+        logger.info(
+            "Episode {} done in {:.1f}ms - step duration: {}, - episode duration: {}, total episode reward: {:.1f}".
+                format(episode, episode_elapsed_time, episode_elapsed_time / self.episode_length, self.episode_length,
+                       sum(rewards_averaged_over_agents)))
 
     def after_some_episodes(self, episode, rewards,
                             best_increase=1.1,
                             episodes_window=50):
-        if self.monitor.is_episode_selected():
-            # Save the model
-            if self.training:
-                self.save_agent_model(episode)
+
+        if self.options == None:
+            if self.monitor.is_episode_selected():
+                # Save the model
+                if self.training:
+                    self.save_agent_model(episode)
+        else:
+            if self.monitor.is_episode_selected_for_modelsave():
+                # Save the model
+                if self.training:
+                    self.save_agent_model(episode)
 
         if self.training:
             # Save best model so far, averaged on a window
@@ -360,7 +493,14 @@ class Evaluation(object):
 
     def reset(self):
         self.observation = self.monitor.reset()
-        self.agent.reset()
+        if self.agent:
+            self.agent.reset()
+
+        # Resetting episode variables
+        self.rewards_averaged_over_agents = []
+        self.rewards = []
+        self.episode_length = 0
+        self.episode_info = []
 
     def close(self):
         """
@@ -369,6 +509,7 @@ class Evaluation(object):
         if self.training:
             self.save_agent_model("final")
         self.monitor.close()
-        self.writer.close()
+        if not self.test_stable_baseline:
+            self.writer.close()
         if self.close_env:
             self.env.close()
