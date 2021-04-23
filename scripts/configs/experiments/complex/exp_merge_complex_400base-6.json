@@ -1,0 +1,38 @@
+{
+  "info": "NN exp1300",
+  "additional_folder_name": "exp_merge_400",
+  "base_config": "configs/experiments/complex/exp_merge_complex_base_ma.json",
+  "agent_config": {
+   "model": {
+          "type": "ConvolutionalNetwork",
+          "activation": "RELU",
+          "head_mlp": {
+              "type": "MultiLayerPerceptron",
+              "layers": [20],
+              "activation": "RELU",
+              "reshape": "True"
+          }
+      },
+    "gamma": 0.95,
+    "n_steps": 1,
+    "batch_size": 64,
+    "memory_capacity": 15000,
+    "target_update": 512,
+    "exploration": {
+        "method": "EpsilonGreedy",
+        "tau": 15000,
+        "temperature": 1.0,
+        "final_temperature": 0.05
+    }
+  },
+
+  "observation": {
+        "type": "MultiAgentObservation",
+        "observation_config": {
+        "type": "GrayscaleObservation",
+        "stack_size": 4,
+        "weights": [0.2989, 0.5870, 0.1140],
+        "scaling": 1.75
+        }
+    }
+}

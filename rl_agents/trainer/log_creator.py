@@ -304,8 +304,9 @@ class LogCreator():
                 vehicle_is_controlled = vehicle_is_controlled_arr[i]
 
                 vehicle_average_distance = float("inf")
-                if i not in no_distance_indices[0]:
-                    vehicle_average_distance = distances_container[i] / distances_counter[i]
+                if self.log_distance:
+                    if i not in no_distance_indices[0]:
+                        vehicle_average_distance = distances_container[i] / distances_counter[i]
 
                 rewards_container_average_vehicle = rewards_container_average[vehicle_reward_index, :]
                 episode_individual_reward_log = {self.rewards_keys[j]: rewards_container_average_vehicle[j] for j
@@ -336,9 +337,10 @@ class LogCreator():
             mission_vehicle_average_speed = vehicles_average_speeds[mission_vehicle_index]
             mission_vehicle_is_controlled = vehicle_is_controlled_arr[mission_vehicle_index]
             mission_vehicle_average_distance = float("inf")
-            if mission_vehicle_index not in no_distance_indices[0]:
-                mission_vehicle_average_distance = distances_container[mission_vehicle_index] \
-                                                   / distances_counter[mission_vehicle_index]
+            if self.log_distance:
+                if mission_vehicle_index not in no_distance_indices[0]:
+                    mission_vehicle_average_distance = distances_container[mission_vehicle_index] \
+                                                       / distances_counter[mission_vehicle_index]
 
             mission_vehicle_reward = None
             if mission_vehicle_is_controlled:

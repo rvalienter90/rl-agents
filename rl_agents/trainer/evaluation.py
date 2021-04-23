@@ -47,6 +47,7 @@ class Evaluation(object):
                  display_agent=True,
                  display_rewards=True,
                  close_env=True,
+                 test_stable_baseline=False,
                  model = None,
                  options=None,
                  ):
@@ -72,6 +73,7 @@ class Evaluation(object):
         self.agent = agent
         self.num_episodes = num_episodes
         self.training = training
+        self.env.training = training
         self.sim_seed = sim_seed
         self.close_env = close_env
         self.display_env = display_env
@@ -97,7 +99,7 @@ class Evaluation(object):
                                  self.run_directory,
                                  video_callable=(None if self.display_env else False))
 
-        self.test_stable_baseline = True
+        self.test_stable_baseline = test_stable_baseline
         self.episode = 0
 
 
@@ -178,7 +180,7 @@ class Evaluation(object):
             self.episode_start_time = time.time()
 
             if (self.num_episodes - self.episode) < 30:
-                self.create_timestep_log = True
+                # self.create_timestep_log = True
                 self.monitor.options['--video_save_freq'] = 1
 
             # Run episode
@@ -218,10 +220,19 @@ class Evaluation(object):
         """
         # Query agent for actions sequence
         if self.test_stable_baseline:
-            action, _ = self.model.predict(self.observation)
+            if isinstance(self.observation, tuple):
+                actionx = []
+                for observation in self.observation:
+                    actioni, _ = self.model.predict(observation)
+                    actioni = int(actioni.astype(int))
+                    actionx.append(actioni)
+                action = tuple(actionx)
+            else:
+                action, _ = self.model.predict(self.observation)
+                action = int(action.astype(int))
             # a =int(action)
             # b =action.astype(int)
-            actions = [int(action.astype(int))]
+            actions = [action]
             # print(actions)
             # print(type(actions))
         else:
