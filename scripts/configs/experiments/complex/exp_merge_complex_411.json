@@ -1,0 +1,28 @@
+{
+  "info": "exp_merge_411 similar to configs/experiments/complex/exp_merge_complex_400base-1.json enable_lane_change True lateral False",
+  "additional_folder_name": "exp_merge_complex411",
+  "base_config": "configs/experiments/complex/exp_merge_complex_400base-1.json",
+  "observation": {
+    "observation_config": {}
+  },
+  "action": {
+    "action_config": {
+      "lateral": false
+    }
+  },
+  "cruising_vehicle_front": {
+    "enable_lane_change": true
+  },
+  "reward": {
+    "cooperative_flag": true,
+    "sympathy_flag": true
+  },
+  "scenario": {},
+  "merging_vehicle": {},
+  "agent_config": {
+    "exploration": {},
+    "model": {},
+    "optimizer": {}
+  },
+  "tracker_logging": true
+}
