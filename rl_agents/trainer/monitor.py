@@ -29,7 +29,7 @@ class MonitorV2(Monitor):
         # see https://python.readthedocs.io/en/stable/library/os.path.html#os.path.exists
         directory = str(directory)
         super(MonitorV2, self).__init__(env, directory, video_callable, force, resume, write_upon_reset, uid, mode)
-
+        self.options = options
         if self.options != None:
             self.video_callable = self.is_episode_selected_for_videosave
 
@@ -214,18 +214,18 @@ class StatsRecorderV2(StatsRecorder):
     def flush(self):
         if self.closed:
             return
+        if self.log_infos:
+            data = {
+                'initial_reset_timestamp': self.initial_reset_timestamp,
+                'timestamps': self.timestamps,
+                'episode_lengths': self.episode_lengths,
+                'episode_rewards': self.episode_rewards,
+                'episode_rewards_': self.episode_rewards_,
+                'episode_seeds': self.episode_seeds,
+                'episode_types': self.episode_types,
+            }
+            for field, value in self.episode_infos.items():
+                data["episode_{}".format(field)] = value
 
-        data = {
-            'initial_reset_timestamp': self.initial_reset_timestamp,
-            'timestamps': self.timestamps,
-            'episode_lengths': self.episode_lengths,
-            'episode_rewards': self.episode_rewards,
-            'episode_rewards_': self.episode_rewards_,
-            'episode_seeds': self.episode_seeds,
-            'episode_types': self.episode_types,
-        }
-        for field, value in self.episode_infos.items():
-            data["episode_{}".format(field)] = value
-
-        with atomic_write.atomic_write(self.path) as f:
-            json.dump(data, f, default=json_encode_np)
+            with atomic_write.atomic_write(self.path) as f:
+                json.dump(data, f, default=json_encode_np)

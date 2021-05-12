@@ -123,4 +123,4 @@ configs/HighwayEnv/agents/DQNAgent/dqn.json
 --environment
 configs/HighwayEnv/env.json 
 --recover-from
-out/models/checkpoint-2999_dqn.tar
+out/models/401.tar

@@ -76,13 +76,13 @@ class OverallStat():
         # TODO: fix crashed mission
         crashed_mission = (episode_lengths - mission_times) < 3
         not_mission_flag_all = np.logical_or(crashed_mission, mission_times == -1)
-        # not_mission_flag = np.logical_or(crashed_mission[-self.n:], mission_times[-self.n:] == -1)
+        not_mission_flag = np.logical_or(crashed_mission[-self.n:], mission_times[-self.n:] == -1)
         not_mission_episodes = np.where(not_mission_flag_all[-self.n:])[0] + 1
         self.total_not_mission = len(not_mission_episodes)
 
         # TODO: fix crashes
-        # crash_episodes_flag_all = np.logical_or(episode_lengths < episode_duration , not_mission_flag_all)
-        crash_episodes_flag_all = episode_lengths < episode_duration
+        crash_episodes_flag_all = np.logical_or(episode_lengths < episode_duration , not_mission_flag_all)
+        # crash_episodes_flag_all = episode_lengths < episode_duration
         # crash_episodes_numbers_all = np.where(episode_lengths < episode_duration)[0] + 1
         crash_episodes_numbers_all = np.where(crash_episodes_flag_all)[0] + 1
         # crash_episodes = np.where(episode_lengths[-self.n:] < episode_duration)[0] + 1

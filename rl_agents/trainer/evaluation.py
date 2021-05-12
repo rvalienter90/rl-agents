@@ -1,3 +1,4 @@
+import copy
 import datetime
 import json
 import logging
@@ -79,8 +80,8 @@ class Evaluation(object):
         self.display_env = display_env
 
         # Modifications
-        self.env.options = options
-        self.options = options
+        self.env.options = copy.deepcopy(options)
+        self.options = copy.deepcopy(options)
 
         self.directory = Path(directory or self.default_directory)
         if self.options["--name-from-envconfig"]:
@@ -97,7 +98,7 @@ class Evaluation(object):
 
         self.monitor = MonitorV2(env,
                                  self.run_directory,
-                                 video_callable=(None if self.display_env else False))
+                                 video_callable=(None if self.display_env else False),options=self.options)
 
         self.test_stable_baseline = test_stable_baseline
         self.episode = 0
@@ -179,7 +180,7 @@ class Evaluation(object):
         for self.episode in range(self.num_episodes):
             self.episode_start_time = time.time()
 
-            if (self.num_episodes - self.episode) < 30:
+            if (self.num_episodes - self.episode) < 4:
                 # self.create_timestep_log = True
                 self.monitor.options['--video_save_freq'] = 1
 

@@ -57,7 +57,7 @@
     }
   },
   "tracker_logging": false,
-  "controlled_vehicles": 4,
+  "controlled_vehicles": 2,
   "simulation_frequency": 15,
   "policy_frequency": 2,
   "duration": 40,
@@ -87,7 +87,7 @@
   "vehicle_label": false,
   "controlled_baseline_vehicle": false,
 
-  "offscreen_rendering": true,
+  "offscreen_rendering": false,
 
   "scenario": {
     "scenario_number": 0,
@@ -233,7 +233,7 @@
     "reward_type": "merging_reward",
     "normalize_reward": true,
     "reward_speed_range": [
-      15,
+      20,
       35
     ],
     "collision_reward": -10,
