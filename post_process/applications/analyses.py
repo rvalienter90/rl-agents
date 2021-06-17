@@ -13,12 +13,12 @@ import pandas as pd
 def main():
     plots_output_path = os.path.join("..", "..", "scripts", "out", "plots")
     # rodo
-    base_path = os.path.join("D:/Rodolfo/Data/Experiments/")
-    folder_path = "m_agents"
+    base_path = os.path.join("D:/Rodolfo/Data/Behavior/")
+    folder_path = ""
     add_to_tensorboard_folders = []
     # add_to_tensorboard_folders.append("1100s/train")
     # modes = ['plt_folder_stats_episode','plt_folder_stats' , 'plt_folder_stats_train']
-    modes = ['plt_folder_stats']
+    modes = ['plt_folder_stats','plt_folder_stats_train']
     # modes.append("add_to_tensorboard")
 
     #######################################################################
@@ -35,13 +35,13 @@ def main():
        These are folder summary plots
        '''
     if "plt_folder_stats" in modes:
-        # simulation_path_base = os.path.join(base_path, folder_path, "train")
-        # pltfolder(simulation_path_base, plots_output_path_base=plots_output_path, plt_name=folder_path + "_train",
-        #           n=3000)
+        simulation_path_base = os.path.join(base_path, folder_path, "train")
+        pltfolder(simulation_path_base, plots_output_path_base=plots_output_path, plt_name=folder_path + "_train",
+                  n=3000)
         # try:
         simulation_path_base = os.path.join(base_path, folder_path, "test")
         pltfolder(simulation_path_base, plots_output_path_base=plots_output_path, plt_name=folder_path + "_test",
-                  n=350)
+                  n=900)
         # except:
         #     print("**********************No test***************************")
     if "plt_folder_stats_episode" in modes:
