@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import time
+import copy
 from multiprocessing.pool import Pool
 from pathlib import Path
 import numpy as np
@@ -393,7 +394,7 @@ class Evaluation(object):
         except NotImplementedError:
             pass
 
-    def after_all_episodes(self, episode, rewards):
+    def after_all_episodes(self, episode, rewards,duration):
         rewards_individual_agents = np.array(self.rewards)
         rewards_averaged_over_agents = np.array(self.rewards_averaged_over_agents)
         self.episode_length = rewards_individual_agents.shape[0]

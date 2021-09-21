@@ -457,7 +457,7 @@ def add_total_distance_travelled(stats):
 
 
 
-def compare_folder(stats, metrics=None, plots_output_path=None):
+def compare_folder(stats, metrics=None, plots_output_path=None, n=900, absolute=True):
     figsize = [10, 6]
     # plt.rcdefaults()
 
@@ -508,6 +508,8 @@ def compare_folder(stats, metrics=None, plots_output_path=None):
         for i, v in enumerate(all_stats_non_aggressive):
             ax.text(v + 3, i + .25, str(v), color='blue', fontweight='bold')
 
+        if absolute:
+            ax.set_xlim(0,n)
         ax.set_yticks(y_pos)
         ax.set_yticklabels(order)
         ax.invert_yaxis()  # labels read top-to-bottom

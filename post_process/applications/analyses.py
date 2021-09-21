@@ -13,12 +13,12 @@ import pandas as pd
 def main():
     plots_output_path = os.path.join("..", "..", "scripts", "out", "plots")
     # rodo
-    base_path = os.path.join("D:/Rodolfo/Data/Behavior/")
-    folder_path = ""
+    base_path = os.path.join("D:/Rodolfo/Data/Behavior/simulations")
+    folder_path = "trainned_neutral_200s"
     add_to_tensorboard_folders = []
     # add_to_tensorboard_folders.append("1100s/train")
     # modes = ['plt_folder_stats_episode','plt_folder_stats' , 'plt_folder_stats_train']
-    modes = ['plt_folder_stats','plt_folder_stats_train']
+    modes = ['plt_folder_stats']
     # modes.append("add_to_tensorboard")
 
     #######################################################################
@@ -35,9 +35,9 @@ def main():
        These are folder summary plots
        '''
     if "plt_folder_stats" in modes:
-        simulation_path_base = os.path.join(base_path, folder_path, "train")
-        pltfolder(simulation_path_base, plots_output_path_base=plots_output_path, plt_name=folder_path + "_train",
-                  n=3000)
+        # simulation_path_base = os.path.join(base_path, folder_path, "train")
+        # pltfolder(simulation_path_base, plots_output_path_base=plots_output_path, plt_name=folder_path + "_train",
+        #           n=3000)
         # try:
         simulation_path_base = os.path.join(base_path, folder_path, "test")
         pltfolder(simulation_path_base, plots_output_path_base=plots_output_path, plt_name=folder_path + "_test",
@@ -60,7 +60,7 @@ def main():
         plt_train(simulation_path_base, plots_output_path_base=plots_output_path, plt_name=plt_name, span=1000)
 
 
-def pltfolder(simulation_path_base, plots_output_path_base=None, plt_name=None, n=1):
+def pltfolder(simulation_path_base, plots_output_path_base=None, plt_name=None, n=900, absolute=True):
     overall_stats = apps.get_overall_stats(simulation_path_base, n)
 
     plots_output_path = os.path.join(plots_output_path_base, plt_name)
@@ -73,7 +73,7 @@ def pltfolder(simulation_path_base, plots_output_path_base=None, plt_name=None, 
         pass
 
     apps.compare_folder(overall_stats, metrics=["total_not_mission", "total_crash", "average_distance_travelled"],
-                        plots_output_path=plots_output_path)
+                        plots_output_path=plots_output_path,n=n, absolute=absolute)
 
 
 def plt_train(simulation_path_base, plots_output_path_base=None, plt_name=None, span=1000, show=False):
