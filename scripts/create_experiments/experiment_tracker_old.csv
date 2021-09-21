@@ -1,0 +1,88 @@
+
+out\HighwayEnv\DQNAgent\run_20201210-154540_6952_exp_merge_400_base, exp_merge_400 base config Same as Exp_merge_2
+out\HighwayEnv\DQNAgent\run_20201210-194124_7464_exp_merge_400_base, exp_merge_400 base config Same as Exp_merge_2
+out\HighwayEnv\DQNAgent\run_20201210-194154_19276_exp_merge_401,exp_merge_401 similar to 400_Base with collision_reward= -3 and successful_merging_reward= 3 and high_speed_reward= 1 and cooperative_reward= 2
+out\HighwayEnv\DQNAgent\run_20201210-194213_4720_exp_merge_402,exp_merge_402 similar to 400_Base with collision_reward= -3 and successful_merging_reward= 5 and high_speed_reward= 1 and cooperative_reward= 0.5
+out\HighwayEnv\DQNAgent\run_20201210-194230_6040_exp_merge_403,exp_merge_403 similar to 400_Base with collision_reward= -3 and successful_merging_reward= 5 and high_speed_reward= 1 and cooperative_reward= 2
+out\HighwayEnv\DQNAgent\run_20201210-204712_10408_exp_merge_404,exp_merge_404 similar to 400_Base with collision_reward= -3 and successful_merging_reward= 10 and high_speed_reward= 1 and cooperative_reward= 0.5
+out\HighwayEnv\DQNAgent\run_20201210-204732_18000_exp_merge_405,exp_merge_405 similar to 400_Base with collision_reward= -3 and successful_merging_reward= 10 and high_speed_reward= 1 and cooperative_reward= 2
+out\HighwayEnv\DQNAgent\run_20201210-204853_2320_exp_merge_406,exp_merge_406 similar to 400_Base with collision_reward= -5 and successful_merging_reward= 3 and high_speed_reward= 1 and cooperative_reward= 0.5
+out\HighwayEnv\DQNAgent\run_20201210-214010_6112_exp_merge_400_base, exp_merge_400 base config Same as Exp_merge_2
+out\HighwayEnv\DQNAgent\run_20201211-094944_556_exp_merge_400_base, exp_merge_400 base config Same as Exp_merge_2
+out\HighwayEnv\DQNAgent\run_20201211-095038_9640_exp_merge_400_base, exp_merge_400 base config Same as Exp_merge_2
+out\HighwayEnv\DQNAgent\run_20201211-095245_16408_exp_merge_3," exp_merge_3 Same as Exp_merge_2, with sympathy"
+out/HighwayEnv/DQNAgent/run_20201210-154945_2653_exp_merge_407,exp_merge_407 similar to 400_Base with collision_reward= -5 and successful_merging_reward= 3 and high_speed_reward= 1 and cooperative_reward= 2
+out/HighwayEnv/DQNAgent/run_20201210-154945_2628_exp_merge_409,exp_merge_409 similar to 400_Base with collision_reward= -5 and successful_merging_reward= 5 and high_speed_reward= 1 and cooperative_reward= 2
+out/HighwayEnv/DQNAgent/run_20201210-154945_2657_exp_merge_412,exp_merge_412 similar to 400_Base with collision_reward= -10 and successful_merging_reward= 3 and high_speed_reward= 1 and cooperative_reward= 0.5
+out/HighwayEnv/DQNAgent/run_20201210-154945_2625_exp_merge_408,exp_merge_408 similar to 400_Base with collision_reward= -5 and successful_merging_reward= 5 and high_speed_reward= 1 and cooperative_reward= 0.5
+out/HighwayEnv/DQNAgent/run_20201210-154945_2635_exp_merge_410,exp_merge_410 similar to 400_Base with collision_reward= -5 and successful_merging_reward= 10 and high_speed_reward= 1 and cooperative_reward= 0.5
+out/HighwayEnv/DQNAgent/run_20201210-154945_2654_exp_merge_411,exp_merge_411 similar to 400_Base with collision_reward= -5 and successful_merging_reward= 10 and high_speed_reward= 1 and cooperative_reward= 2
+out/HighwayEnv/DQNAgent/run_20201211-005900_20577_exp_merge_416,exp_merge_416 similar to 400_Base with collision_reward= -10 and successful_merging_reward= 10 and high_speed_reward= 1 and cooperative_reward= 0.5
+out/HighwayEnv/DQNAgent/run_20201211-005900_20542_exp_merge_413,exp_merge_413 similar to 400_Base with collision_reward= -10 and successful_merging_reward= 3 and high_speed_reward= 1 and cooperative_reward= 2
+out/HighwayEnv/DQNAgent/run_20201211-005900_20546_exp_merge_415,exp_merge_415 similar to 400_Base with collision_reward= -10 and successful_merging_reward= 5 and high_speed_reward= 1 and cooperative_reward= 2
+out/HighwayEnv/DQNAgent/run_20201211-005900_20539_exp_merge_414,exp_merge_414 similar to 400_Base with collision_reward= -10 and successful_merging_reward= 5 and high_speed_reward= 1 and cooperative_reward= 0.5
+out/HighwayEnv/DQNAgent/run_20201211-005900_20531_exp_merge_417,exp_merge_417 similar to 400_Base with collision_reward= -10 and successful_merging_reward= 10 and high_speed_reward= 1 and cooperative_reward= 2
+out/HighwayEnv/DQNAgent/run_20201215-115036_11197_exp_merge_512,exp_merge_512 similar to 500_Base with collision_reward= -10 and successful_merging_reward= 3 and high_speed_reward= 1 and cooperative_reward= 0.5
+out/HighwayEnv/DQNAgent/run_20201215-115036_11192_exp_merge_511,exp_merge_511 similar to 500_Base with collision_reward= -5 and successful_merging_reward= 10 and high_speed_reward= 1 and cooperative_reward= 2
+out/HighwayEnv/DQNAgent/run_20201215-115036_11182_exp_merge_510,exp_merge_510 similar to 500_Base with collision_reward= -5 and successful_merging_reward= 10 and high_speed_reward= 1 and cooperative_reward= 0.5
+out/HighwayEnv/DQNAgent/run_20201215-115036_11181_exp_merge_508,exp_merge_508 similar to 500_Base with collision_reward= -5 and successful_merging_reward= 5 and high_speed_reward= 1 and cooperative_reward= 0.5
+out/HighwayEnv/DQNAgent/run_20201215-115036_11189_exp_merge_509,exp_merge_509 similar to 500_Base with collision_reward= -5 and successful_merging_reward= 5 and high_speed_reward= 1 and cooperative_reward= 2
+out/HighwayEnv/DQNAgent/run_20201216-004025_5140_exp_merge_514,exp_merge_514 similar to 500_Base with collision_reward= -10 and successful_merging_reward= 5 and high_speed_reward= 1 and cooperative_reward= 0.5
+out/HighwayEnv/DQNAgent/run_20201216-004025_5147_exp_merge_516,exp_merge_516 similar to 500_Base with collision_reward= -10 and successful_merging_reward= 10 and high_speed_reward= 1 and cooperative_reward= 0.5
+out/HighwayEnv/DQNAgent/run_20201216-004025_5146_exp_merge_515,exp_merge_515 similar to 500_Base with collision_reward= -10 and successful_merging_reward= 5 and high_speed_reward= 1 and cooperative_reward= 2
+out/HighwayEnv/DQNAgent/run_20201216-004025_5156_exp_merge_517,exp_merge_517 similar to 500_Base with collision_reward= -10 and successful_merging_reward= 10 and high_speed_reward= 1 and cooperative_reward= 2
+out/HighwayEnv/DQNAgent/run_20201216-004025_5141_exp_merge_513,exp_merge_513 similar to 500_Base with collision_reward= -10 and successful_merging_reward= 3 and high_speed_reward= 1 and cooperative_reward= 2
+out\HighwayEnv\DQNAgent\run_20201215-235522_14836_exp_merge_501,exp_merge_501 similar to 500_Base with collision_reward= -3 and successful_merging_reward= 3 and high_speed_reward= 1 and cooperative_reward= 2
+out\HighwayEnv\DQNAgent\run_20201215-235536_8656_exp_merge_502,exp_merge_502 similar to 500_Base with collision_reward= -3 and successful_merging_reward= 5 and high_speed_reward= 1 and cooperative_reward= 0.5
+out\HighwayEnv\DQNAgent\run_20201215-235552_19408_exp_merge_503,exp_merge_503 similar to 500_Base with collision_reward= -3 and successful_merging_reward= 5 and high_speed_reward= 1 and cooperative_reward= 2
+out\HighwayEnv\DQNAgent\run_20201215-235608_20732_exp_merge_504,exp_merge_504 similar to 500_Base with collision_reward= -3 and successful_merging_reward= 10 and high_speed_reward= 1 and cooperative_reward= 0.5
+out\HighwayEnv\DQNAgent\run_20201216-161143_7448_exp_merge_505,exp_merge_505 similar to 500_Base with collision_reward= -3 and successful_merging_reward= 10 and high_speed_reward= 1 and cooperative_reward= 2
+out\HighwayEnv\DQNAgent\run_20201216-161156_13892_exp_merge_506,exp_merge_506 similar to 500_Base with collision_reward= -5 and successful_merging_reward= 3 and high_speed_reward= 1 and cooperative_reward= 0.5
+out\HighwayEnv\DQNAgent\run_20201216-161207_20264_exp_merge_507,exp_merge_507 similar to 500_Base with collision_reward= -5 and successful_merging_reward= 3 and high_speed_reward= 1 and cooperative_reward= 2
+out\HighwayEnv\DQNAgent\run_20201218-231917_14404_exp_merge_603,exp_merge_603 similar to 600_Base with initial_position= 85 and random_offset_merging= 10 and speed= 22
+out\HighwayEnv\DQNAgent\run_20201218-231950_13120_exp_merge_604,exp_merge_604 similar to 600_Base with initial_position= 85 and random_offset_merging= 15 and speed= 20
+out\HighwayEnv\DQNAgent\run_20201218-232012_14452_exp_merge_605,exp_merge_605 similar to 600_Base with initial_position= 85 and random_offset_merging= 15 and speed= 22
+out\HighwayEnv\DQNAgent\run_20201218-232029_6940_exp_merge_606,exp_merge_606 similar to 600_Base with initial_position= 90 and random_offset_merging= 5 and speed= 20
+out\HighwayEnv\DQNAgent\run_20201218-233003_2696_exp_merge_607,exp_merge_607 similar to 600_Base with initial_position= 90 and random_offset_merging= 5 and speed= 22
+out\HighwayEnv\DQNAgent\run_20201218-233017_1316_exp_merge_608,exp_merge_608 similar to 600_Base with initial_position= 90 and random_offset_merging= 10 and speed= 20
+out\HighwayEnv\DQNAgent\run_20201220-005938_32224_exp_merge_600,exp_merge_600 similar to 600_Base with initial_position= 85 and random_offset_merging= 5 and speed= 20
+out\HighwayEnv\DQNAgent\run_20201220-005947_17720_exp_merge_600,exp_merge_600 similar to 600_Base with initial_position= 85 and random_offset_merging= 5 and speed= 20
+out\HighwayEnv\DQNAgent\run_20201220-010002_8288_exp_merge_601,exp_merge_601 similar to 600_Base with initial_position= 85 and random_offset_merging= 5 and speed= 22
+out\HighwayEnv\DQNAgent\run_20201220-010018_31336_exp_merge_602,exp_merge_602 similar to 600_Base with initial_position= 85 and random_offset_merging= 10 and speed= 20
+out\HighwayEnv\DQNAgent\run_20201220-010046_2424_exp_merge_609,exp_merge_609 similar to 600_Base with initial_position= 90 and random_offset_merging= 10 and speed= 22
+out\HighwayEnv\DQNAgent\run_20201220-010106_33060_exp_merge_610,exp_merge_610 similar to 600_Base with initial_position= 90 and random_offset_merging= 15 and speed= 20
+out\HighwayEnv\DQNAgent\run_20201220-010120_31012_exp_merge_611,exp_merge_611 similar to 600_Base with initial_position= 90 and random_offset_merging= 15 and speed= 22
+out\HighwayEnv\DQNAgent\run_20201220-010154_23936_exp_merge_612,exp_merge_612 similar to 600_Base with initial_position= 95 and random_offset_merging= 5 and speed= 20
+out\HighwayEnv\DQNAgent\run_20201220-230749_26476_exp_merge_613,exp_merge_613 similar to 600_Base with initial_position= 95 and random_offset_merging= 5 and speed= 22
+out\HighwayEnv\DQNAgent\run_20201220-230823_10096_exp_merge_614,exp_merge_614 similar to 600_Base with initial_position= 95 and random_offset_merging= 10 and speed= 20
+out\HighwayEnv\DQNAgent\run_20201220-230836_30696_exp_merge_615,exp_merge_615 similar to 600_Base with initial_position= 95 and random_offset_merging= 10 and speed= 22
+out\HighwayEnv\DQNAgent\run_20201220-230850_19720_exp_merge_616,exp_merge_616 similar to 600_Base with initial_position= 95 and random_offset_merging= 15 and speed= 20
+out\HighwayEnv\DQNAgent\run_20201221-064457_15892_exp_merge_617,exp_merge_617 similar to 600_Base with initial_position= 95 and random_offset_merging= 15 and speed= 22
+out\HighwayEnv\DQNAgent\run_20201221-235231_11520_exp_merge_700,exp_merge_700 similar to 700_Base with initial_position= 85 and random_offset_merging= 15 and speed= 20
+out\HighwayEnv\DQNAgent\run_20201221-235242_34688_exp_merge_701,exp_merge_701 similar to 700_Base with initial_position= 85 and random_offset_merging= 15 and speed= 22
+out\HighwayEnv\DQNAgent\run_20201221-235304_23196_exp_merge_702,exp_merge_702 similar to 700_Base with initial_position= 85 and random_offset_merging= 15 and speed= 25
+out\HighwayEnv\DQNAgent\run_20201221-235314_25476_exp_merge_703,exp_merge_703 similar to 700_Base with initial_position= 90 and random_offset_merging= 15 and speed= 20
+out\HighwayEnv\DQNAgent\run_20201221-235327_28856_exp_merge_704,exp_merge_704 similar to 700_Base with initial_position= 90 and random_offset_merging= 15 and speed= 22
+out\HighwayEnv\DQNAgent\run_20201221-235341_18428_exp_merge_705,exp_merge_705 similar to 700_Base with initial_position= 90 and random_offset_merging= 15 and speed= 25
+out\HighwayEnv\DQNAgent\run_20201221-235354_18812_exp_merge_706,exp_merge_706 similar to 700_Base with initial_position= 95 and random_offset_merging= 15 and speed= 20
+out\HighwayEnv\DQNAgent\run_20201221-235446_32568_exp_merge_707,exp_merge_707 similar to 700_Base with initial_position= 95 and random_offset_merging= 15 and speed= 22
+out\HighwayEnv\DQNAgent\run_20201224-002025_26720_exp_merge_708,exp_merge_708 similar to 700_Base with initial_position= 95 and random_offset_merging= 15 and speed= 25
+out\HighwayEnv\DQNAgent\run_20201224-002038_34512_exp_merge_709,exp_merge_709 similar to 700_Base with initial_position= 100 and random_offset_merging= 15 and speed= 20
+out\HighwayEnv\DQNAgent\run_20201224-002052_12764_exp_merge_710,exp_merge_710 similar to 700_Base with initial_position= 100 and random_offset_merging= 15 and speed= 22
+out\HighwayEnv\DQNAgent\run_20201224-002103_16500_exp_merge_711,exp_merge_711 similar to 700_Base with initial_position= 100 and random_offset_merging= 15 and speed= 25
+out\HighwayEnv\DQNAgent\run_20201224-003131_30900_exp_merge_800,exp_merge_800 similar to 800_Base with initial_position= 85 and random_offset_merging= 15 and speed= 22
+out\HighwayEnv\DQNAgent\run_20201224-003142_29200_exp_merge_801,exp_merge_801 similar to 800_Base with initial_position= 85 and random_offset_merging= 15 and speed= 25
+out\HighwayEnv\DQNAgent\run_20201224-003221_13352_exp_merge_802,exp_merge_802 similar to 800_Base with initial_position= 90 and random_offset_merging= 15 and speed= 22
+out\HighwayEnv\DQNAgent\run_20201224-003233_30316_exp_merge_803,exp_merge_803 similar to 800_Base with initial_position= 90 and random_offset_merging= 15 and speed= 25
+out\HighwayEnv\DQNAgent\run_20201225-004815_19364_exp_merge_900,exp_merge_900 similar to 900_Base with initial_position= 85 and random_offset_merging= 2 and speed= 25
+out\HighwayEnv\DQNAgent\run_20201225-004826_29144_exp_merge_901,exp_merge_901 similar to 900_Base with initial_position= 85 and random_offset_merging= 5 and speed= 25
+out\HighwayEnv\DQNAgent\run_20201225-004853_31024_exp_merge_902,exp_merge_902 similar to 900_Base with initial_position= 85 and random_offset_merging= 10 and speed= 25
+out\HighwayEnv\DQNAgent\run_20201225-004913_30776_exp_merge_903,exp_merge_903 similar to 900_Base with initial_position= 85 and random_offset_merging= 15 and speed= 25
+out\HighwayEnv\DQNAgent\run_20201225-004925_6896_exp_merge_904,exp_merge_904 similar to 900_Base with initial_position= 85 and random_offset_merging= 20 and speed= 25
+out\HighwayEnv\DQNAgent\run_20201225-004939_11272_exp_merge_905,exp_merge_905 similar to 900_Base with initial_position= 90 and random_offset_merging= 2 and speed= 25
+out\HighwayEnv\DQNAgent\run_20201225-004951_32116_exp_merge_906,exp_merge_906 similar to 900_Base with initial_position= 90 and random_offset_merging= 5 and speed= 25
+out\HighwayEnv\DQNAgent\run_20201225-005007_26332_exp_merge_907,exp_merge_907 similar to 900_Base with initial_position= 90 and random_offset_merging= 10 and speed= 25
+out\HighwayEnv\DQNAgent\run_20201225-005021_20012_exp_merge_908,exp_merge_908 similar to 900_Base with initial_position= 90 and random_offset_merging= 15 and speed= 25
+out\HighwayEnv\DQNAgent\run_20201225-005120_33448_exp_merge_909,exp_merge_909 similar to 900_Base with initial_position= 90 and random_offset_merging= 20 and speed= 25
+out\HighwayEnv\DQNAgent\run_20210113-155250_10164_exp_merge_900,exp_merge_900 similar to 900_Base with initial_position= 85 and random_offset_merging= 2 and speed= 25
+
