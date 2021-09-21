@@ -1,8 +1,8 @@
-import copy
 import datetime
 import json
 import logging
 import os
+import time
 from multiprocessing.pool import Pool
 from pathlib import Path
 import numpy as np
@@ -21,7 +21,6 @@ import time
 from rl_agents.trainer.log_creator import LogCreator
 
 logger = logging.getLogger(__name__)
-
 
 
 class Evaluation(object):
@@ -189,6 +188,8 @@ class Evaluation(object):
             if not self.test_stable_baseline:
                 self.seed(self.episode)
             self.reset()
+            rewards = []
+            start_time = time.time()
 
             while not terminal:
                 # Step until a terminal step is reached
@@ -212,7 +213,8 @@ class Evaluation(object):
                     pass
 
             # End of episode
-            self.after_all_episodes(self.episode, self.rewards)
+            duration = time.time() - start_time
+            self.after_all_episodes(self.episode, self.rewards, duration)
             self.after_some_episodes(self.episode, self.rewards)
 
     def step(self):
@@ -272,10 +274,10 @@ class Evaluation(object):
         batch_sizes = near_split(self.num_episodes * episode_duration, size_bins=self.agent.config["batch_size"])
         self.agent.reset()
         for batch, batch_size in enumerate(batch_sizes):
-            logger.info("[BATCH={}/{}]---------------------------------------".format(batch + 1, len(batch_sizes)))
-            logger.info("[BATCH={}/{}][run_batched_episodes] #samples={}".format(batch + 1, len(batch_sizes),
+            logger.info("[BATCH={}/{}]---------------------------------------".format(batch+1, len(batch_sizes)))
+            logger.info("[BATCH={}/{}][run_batched_episodes] #samples={}".format(batch+1, len(batch_sizes),
                                                                                  len(self.agent.memory)))
-            logger.info("[BATCH={}/{}]---------------------------------------".format(batch + 1, len(batch_sizes)))
+            logger.info("[BATCH={}/{}]---------------------------------------".format(batch+1, len(batch_sizes)))
             # Save current agent
             model_path = self.save_agent_model(identifier=batch)
 
@@ -423,6 +425,7 @@ class Evaluation(object):
             self.writer.add_scalar('episode/return',
                                    sum(r * gamma ** t for t, r in enumerate(rewards_averaged_over_agents)), episode)
             self.writer.add_histogram('episode/rewards', rewards_averaged_over_agents, episode)
+            self.writer.add_scalar('episode/fps', len(rewards) / duration, episode)
 
         # Create raw logfiles
         if self.create_episode_log:
