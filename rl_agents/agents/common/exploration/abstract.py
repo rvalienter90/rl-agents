@@ -42,7 +42,7 @@ class DiscreteDistribution(Configurable, ABC):
         pass
 
 
-def exploration_factory(exploration_config, action_space):
+def exploration_factory(exploration_config, action_space, env =None):
     """
         Handles creation of exploration policies
     :param exploration_config: configuration dictionary of the policy, must contain a "method" key
@@ -50,13 +50,15 @@ def exploration_factory(exploration_config, action_space):
     :return: a new exploration policy
     """
     from rl_agents.agents.common.exploration.boltzmann import Boltzmann
-    from rl_agents.agents.common.exploration.epsilon_greedy import EpsilonGreedy
+    from rl_agents.agents.common.exploration.epsilon_greedy import EpsilonGreedy, EpsilonGreedyLinear
     from rl_agents.agents.common.exploration.greedy import Greedy
 
     if exploration_config['method'] == 'Greedy':
         return Greedy(action_space, exploration_config)
     elif exploration_config['method'] == 'EpsilonGreedy':
         return EpsilonGreedy(action_space, exploration_config)
+    elif exploration_config['method'] == 'EpsilonGreedyLinear':
+        return EpsilonGreedyLinear(action_space, exploration_config)
     elif exploration_config['method'] == 'Boltzmann':
         return Boltzmann(action_space, exploration_config)
     else:

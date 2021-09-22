@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 from gym import spaces
 from torch.nn import functional as F
-
+import copy
 from rl_agents.configuration import Configurable
 
 
@@ -13,6 +13,7 @@ class BaseModule(torch.nn.Module):
             - initialization factory
             - normalization parameters
     """
+
     def __init__(self, activation_type="RELU", reset_type="XAVIER", normalize=None):
         super().__init__()
         self.activation = activation_factory(activation_type)
@@ -46,7 +47,6 @@ class BaseModule(torch.nn.Module):
             input = (input.float() - self.mean.float()) / self.std.float()
         return NotImplementedError
 
-
 class MultiLayerPerceptron(BaseModule, Configurable):
     def __init__(self, config):
         super().__init__()
@@ -75,7 +75,6 @@ class MultiLayerPerceptron(BaseModule, Configurable):
             x = self.predict(x)
         return x
 
-
 class DuelingNetwork(BaseModule, Configurable):
     def __init__(self, config):
         super().__init__()
@@ -99,12 +98,143 @@ class DuelingNetwork(BaseModule, Configurable):
 
     def forward(self, x):
         x = self.base_module(x)
-        value = self.value(x).expand(-1,  self.config["out"])
+        value = self.value(x).expand(-1, self.config["out"])
         advantage = self.advantage(x)
-        return value + advantage - advantage.mean(1).unsqueeze(1).expand(-1,  self.config["out"])
+        return value + advantage - advantage.mean(1).unsqueeze(1).expand(-1, self.config["out"])
+
+# we need a convolution layer and since PyTorch does not have the 'auto' padding in Conv2d, so we have to code ourself!
+class Conv2dAuto(nn.Conv2d):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.padding =  (self.kernel_size[0] // 2, self.kernel_size[1] // 2) # dynamic add padding based on the kernel_size
+
+class ConvNetAtari(nn.Module, Configurable):
+    def __init__(self, config):
+        super().__init__()
+        Configurable.__init__(self, config)
+        self.activation = activation_factory(self.config["activation"])
+        self.conv1 = nn.Conv2d(self.config["in_channels"], 16, kernel_size=8, stride=4)
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=4, stride=2)
+
+        # MLP Head
+        # Number of Linear input connections depends on output of conv2d layers
+        # and therefore the input image size, so compute it.
+        def conv2d_size_out(size, kernel_size=3, stride=1):
+            return (size - (kernel_size - 1) - 1) // stride + 1
+
+        convw = conv2d_size_out(conv2d_size_out(self.config["in_width"], kernel_size=8, stride=4), kernel_size=4, stride=2)
+        convh = conv2d_size_out(conv2d_size_out(self.config["in_height"], kernel_size=8, stride=4), kernel_size=4, stride=2)
+        assert convh > 0 and convw > 0
+        self.config["head_mlp"]["in"] = convw * convh * 32
+        self.config["head_mlp"]["out"] = self.config["out"]
+
+        self.fc1 = nn.Linear(self.config["head_mlp"]["in"], 256)
+        self.fc2 = nn.Linear(256, self.config["head_mlp"]["out"])
+
+    @classmethod
+    def default_config(cls):
+        return {
+            "in_channels": None,
+            "in_height": None,
+            "in_width": None,
+            "activation": "RELU",
+            "head_mlp": {
+                "type": "MultiLayerPerceptron",
+                "in": None,
+                "layers": [],
+                "activation": "RELU",
+                "reshape": "True",
+                "out": None
+            },
+            "out": None
+        }
+
+    def num_flat_features(self, x):
+        size = x.size()[1:]  # all dimensions except the batch dimension
+        num_features = 1
+        for s in size:
+            num_features *= s
+        return num_features
+
+    def forward(self, x):
+        """
+            Forward convolutional network
+        :param x: tensor of shape BCHW
+        """
+        x = self.activation((self.conv1(x)))
+        x = self.activation((self.conv2(x)))
+
+        # x = x.view(-1, self.num_flat_features(x))
+        x = torch.flatten(x,1)
+        x = self.activation(self.fc1(x))
+        x = self.fc2(x)
+
+        return x
+class ConvNetAtariDoubleQ(nn.Module, Configurable):
+    def __init__(self, config):
+        super().__init__()
+        Configurable.__init__(self, config)
+        self.activation = activation_factory(self.config["activation"])
+        self.conv1 = nn.Conv2d(self.config["in_channels"], 32, kernel_size=8, stride=4)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=2)
+        self.conv3 = nn.Conv2d(64, 64, kernel_size=3, stride=1)
+        # MLP Head
+        # Number of Linear input connections depends on output of conv2d layers
+        # and therefore the input image size, so compute it.
+        def conv2d_size_out(size, kernel_size=3, stride=1):
+            return (size - (kernel_size - 1) - 1) // stride + 1
+
+        convw = conv2d_size_out(conv2d_size_out(conv2d_size_out(self.config["in_width"], kernel_size=8, stride=4), kernel_size=4, stride=2))
+        convh = conv2d_size_out(conv2d_size_out(conv2d_size_out(self.config["in_height"], kernel_size=8, stride=4), kernel_size=4, stride=2))
+        assert convh > 0 and convw > 0
+        self.config["head_mlp"]["in"] = convw * convh * 64
+        self.config["head_mlp"]["out"] = self.config["out"]
+
+        self.fc1 = nn.Linear(self.config["head_mlp"]["in"], 512)
+        self.fc2 = nn.Linear(512, self.config["head_mlp"]["out"])
+
+    @classmethod
+    def default_config(cls):
+        return {
+            "in_channels": None,
+            "in_height": None,
+            "in_width": None,
+            "activation": "RELU",
+            "head_mlp": {
+                "type": "MultiLayerPerceptron",
+                "in": None,
+                "layers": [],
+                "activation": "RELU",
+                "reshape": "True",
+                "out": None
+            },
+            "out": None
+        }
+
+    def num_flat_features(self, x):
+        size = x.size()[1:]  # all dimensions except the batch dimension
+        num_features = 1
+        for s in size:
+            num_features *= s
+        return num_features
+
+    def forward(self, x):
+        """
+            Forward convolutional network
+        :param x: tensor of shape BCHW
+        """
+        x = self.activation((self.conv1(x)))
+        x = self.activation((self.conv2(x)))
+        x = self.activation((self.conv3(x)))
+        x = torch.flatten(x, 1)
+        # x = x.view(-1, self.num_flat_features(x))
+        x = self.activation(self.fc1(x))
+        x = self.fc2(x)
+
+        return x
 
 
-class ConvolutionalNetwork(nn.Module, Configurable):
+class ConvNet3Layer(nn.Module, Configurable):
     def __init__(self, config):
         super().__init__()
         Configurable.__init__(self, config)
@@ -117,7 +247,8 @@ class ConvolutionalNetwork(nn.Module, Configurable):
         # Number of Linear input connections depends on output of conv2d layers
         # and therefore the input image size, so compute it.
         def conv2d_size_out(size, kernel_size=2, stride=2):
-            return (size - (kernel_size - 1) - 1) // stride  + 1
+            return (size - (kernel_size - 1) - 1) // stride + 1
+
         convw = conv2d_size_out(conv2d_size_out(conv2d_size_out(self.config["in_width"])))
         convh = conv2d_size_out(conv2d_size_out(conv2d_size_out(self.config["in_height"])))
         assert convh > 0 and convw > 0
@@ -152,6 +283,342 @@ class ConvolutionalNetwork(nn.Module, Configurable):
         x = self.activation((self.conv2(x)))
         x = self.activation((self.conv3(x)))
         return self.head(x)
+class ConvNet3LayerVariableKernel(nn.Module, Configurable):
+    def __init__(self, config):
+        super().__init__()
+        Configurable.__init__(self, config)
+        self.activation = activation_factory(self.config["activation"])
+        self.conv1 = nn.Conv2d(self.config["in_channels"], 16, kernel_size=5, stride=2)
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=3, stride=1)
+        self.conv3 = nn.Conv2d(32, 64, kernel_size=3, stride=1)
+        self.conv4 = nn.Conv2d(64, 128, kernel_size=3, stride=1)
+
+        # MLP Head
+        # Number of Linear input connections depends on output of conv2d layers
+        # and therefore the input image size, so compute it.
+        def conv2d_size_out(size, kernel_size=3, stride=1):
+            return (size - (kernel_size - 1) - 1) // stride + 1
+
+        convw = conv2d_size_out(conv2d_size_out(conv2d_size_out(conv2d_size_out(self.config["in_width"], kernel_size=5, stride=2))))
+        convh = conv2d_size_out(conv2d_size_out(conv2d_size_out(conv2d_size_out(self.config["in_height"], kernel_size=5, stride=2))))
+        assert convh > 0 and convw > 0
+        self.config["head_mlp"]["in"] = convw * convh * 128
+        self.config["head_mlp"]["out"] = self.config["out"]
+        self.head = model_factory(self.config["head_mlp"])
+
+    @classmethod
+    def default_config(cls):
+        return {
+            "in_channels": None,
+            "in_height": None,
+            "in_width": None,
+            "activation": "RELU",
+            "head_mlp": {
+                "type": "MultiLayerPerceptron",
+                "in": None,
+                "layers": [],
+                "activation": "RELU",
+                "reshape": "True",
+                "out": None
+            },
+            "out": None
+        }
+
+    def forward(self, x):
+        """
+            Forward convolutional network
+        :param x: tensor of shape BCHW
+        """
+        x = self.activation((self.conv1(x)))
+        x = self.activation((self.conv2(x)))
+        x = self.activation((self.conv3(x)))
+        x = self.activation((self.conv4(x)))
+        return self.head(x)
+
+
+class ConvNetStanfordMARLNoRes(nn.Module, Configurable):
+
+    def __init__(self, config):
+        super().__init__()
+        Configurable.__init__(self, config)
+        self.activation = activation_factory(self.config["activation"])
+        self.conv1 = nn.Conv2d(self.config["in_channels"], 32, kernel_size=3, stride=1)
+        self.conv2 = nn.Conv2d(32, 32, kernel_size=3, stride=1)
+        self.bn1 = nn.BatchNorm2d(32)
+        self.conv3 = nn.Conv2d(32, 32, kernel_size=3, stride=1)
+        self.conv4 = nn.Conv2d(32, 32, kernel_size=3, stride=1)
+        self.bn2 = nn.BatchNorm2d(32)
+        self.conv5 = nn.Conv2d(32, 32, kernel_size=3, stride=1)
+        self.maxpool1 = nn.MaxPool2d(3, stride=2)
+
+        # MLP Head
+        # Number of Linear input connections depends on output of conv2d layers
+        # and therefore the input image size, so compute it.
+        def conv2d_size_out(size, kernel_size=3, stride=1):
+            return (size - (kernel_size - 1) - 1) // stride + 1
+
+        def maxpool_size_out(size, kernel_size=3, stride=2, padding=0):
+            return (size + 2 * padding - (kernel_size - 1) - 1) // stride + 1
+
+        convw = conv2d_size_out(
+            conv2d_size_out(
+                maxpool_size_out(conv2d_size_out(conv2d_size_out(conv2d_size_out(self.config["in_width"]))))))
+        convh = conv2d_size_out(
+            conv2d_size_out(
+                maxpool_size_out(conv2d_size_out(conv2d_size_out(conv2d_size_out(self.config["in_height"]))))))
+
+        assert convh > 0 and convw > 0
+        self.config["head_mlp"]["in"] = convw * convh * 32
+        self.config["head_mlp"]["out"] = self.config["out"]
+        self.head = model_factory(self.config["head_mlp"])
+
+    @classmethod
+    def default_config(cls):
+        return {
+            "in_channels": None,
+            "in_height": None,
+            "in_width": None,
+            "activation": "RELU",
+            "head_mlp": {
+                "type": "MultiLayerPerceptron",
+                "in": None,
+                "layers": [],
+                "activation": "RELU",
+                "reshape": "True",
+                "out": None
+            },
+            "out": None
+        }
+
+    def forward(self, x):
+        """
+            Forward convolutional network
+        :param x: tensor of shape BCHW
+        """
+        x = self.activation((self.conv1(x)))
+        x = self.activation((self.conv2(x)))
+        x = self.bn1(x)
+        x = self.activation((self.conv3(x)))
+        x = self.maxpool1(x)
+        x = self.activation((self.conv4(x)))
+        x = self.bn2(x)
+        x = self.activation((self.conv5(x)))
+        return self.head(x)
+class ConvNetStanfordMARLRes(nn.Module, Configurable):
+
+    def __init__(self, config):
+        super().__init__()
+        Configurable.__init__(self, config)
+        self.activation = activation_factory(self.config["activation"])
+        self.conv1 = nn.Conv2d(self.config["in_channels"], 32, kernel_size=3, stride=1, padding =1)
+        self.conv2 = nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1)
+        self.maxpool1 = nn.MaxPool2d(3, stride=2)
+        self.bn1 = nn.BatchNorm2d(32)
+
+
+
+        # MLP Head
+        # Number of Linear input connections depends on output of conv2d layers
+        # and therefore the input image size, so compute it.
+        def conv2d_size_out(size, kernel_size=3, stride=1,padding =1):
+            return (size +2*padding - (kernel_size - 1) - 1) // stride + 1
+
+        def maxpool_size_out(size, kernel_size=3, stride=2, padding=0):
+            return (size + 2 * padding - (kernel_size - 1) - 1) // stride + 1
+        convw = conv2d_size_out(
+            conv2d_size_out(maxpool_size_out(conv2d_size_out(conv2d_size_out(conv2d_size_out(self.config["in_width"]))))))
+        convh = conv2d_size_out(
+            conv2d_size_out(maxpool_size_out(conv2d_size_out(conv2d_size_out(conv2d_size_out(self.config["in_height"]))))))
+        assert convh > 0 and convw > 0
+        self.config["head_mlp"]["in"] = convw * convh * 32
+        self.config["head_mlp"]["out"] = self.config["out"]
+        self.head = model_factory(self.config["head_mlp"])
+
+    @classmethod
+    def default_config(cls):
+        return {
+            "in_channels": None,
+            "in_height": None,
+            "in_width": None,
+            "activation": "RELU",
+            "head_mlp": {
+                "type": "MultiLayerPerceptron",
+                "in": None,
+                "layers": [],
+                "activation": "RELU",
+                "reshape": "True",
+                "out": None
+            },
+            "out": None
+        }
+
+    def forward(self, x):
+        """
+            Forward convolutional network
+        :param x: tensor of shape BCHW
+        """
+        x = self.activation((self.conv1(x)))
+        # x_residual1 = x.detach().clone()
+        # x_residual1 = torch.tensor(x)
+        # x_residual1 = x.detach().clone()
+        x_residual1 = x
+        x = self.activation((self.conv2(x)))
+        x = self.bn1(x)
+        x = self.activation((self.conv2(x)))
+        x += x_residual1
+        x = self.maxpool1(x)
+        # x_residual2 = x.detach().clone()
+        x_residual2 = x
+        x = self.activation((self.conv2(x)))
+        x = self.bn1(x)
+        x = self.activation((self.conv2(x)))
+        x += x_residual2
+        return self.head(x)
+
+
+class ConvNet3D(nn.Module, Configurable):
+    def __init__(self, config):
+        super().__init__()
+        Configurable.__init__(self, config)
+        self.activation = activation_factory(self.config["activation"])
+        self.conv1 = nn.Conv3d(self.config["in_channels"], 32, kernel_size=(1, 8, 8), stride=(1, 4, 4))
+        self.conv2 = nn.Conv3d(32, 64, kernel_size=(3, 4, 4), stride=(1, 2, 2))
+        self.conv3 = nn.Conv3d(64, 64,  kernel_size=(3, 3, 3), stride=(1, 1, 1))
+        # MLP Head
+        # Number of Linear input connections depends on output of conv2d layers
+        # and therefore the input image size, so compute it.
+        def conv2d_size_out(size, kernel_size=3, stride=1):
+            return (size - (kernel_size - 1) - 1) // stride + 1
+
+        convw = conv2d_size_out(conv2d_size_out(conv2d_size_out(self.config["in_width"], kernel_size=8, stride=4), kernel_size=4, stride=2))
+        convh = conv2d_size_out(conv2d_size_out(conv2d_size_out(self.config["in_height"], kernel_size=8, stride=4), kernel_size=4, stride=2))
+        convd = conv2d_size_out(conv2d_size_out(conv2d_size_out(self.config["in_depth"], kernel_size=3, stride=1), kernel_size=1,stride=1))
+
+
+        assert convh > 0 and convw > 0
+        self.config["head_mlp"]["in"] = convw * convh * convd * 64
+        self.config["head_mlp"]["out"] = self.config["out"]
+
+        self.fc1 = nn.Linear(self.config["head_mlp"]["in"], 512)
+        self.fc2 = nn.Linear(512, self.config["head_mlp"]["out"])
+
+    @classmethod
+    def default_config(cls):
+        return {
+            "in_channels": None,
+            "in_height": None,
+            "in_width": None,
+            "activation": "RELU",
+            "head_mlp": {
+                "type": "MultiLayerPerceptron",
+                "in": None,
+                "layers": [],
+                "activation": "RELU",
+                "reshape": "True",
+                "out": None
+            },
+            "out": None
+        }
+
+    def num_flat_features(self, x):
+        size = x.size()[1:]  # all dimensions except the batch dimension
+        num_features = 1
+        for s in size:
+            num_features *= s
+        return num_features
+
+    def forward(self, x):
+        """
+            Forward convolutional network
+        :param x: tensor of shape BCHW
+        """
+        x = self.activation((self.conv1(x)))
+        x = self.activation((self.conv2(x)))
+        x = self.activation((self.conv3(x)))
+        x = torch.flatten(x, 1)
+        # x = x.view(-1, self.num_flat_features(x))
+        x = self.activation(self.fc1(x))
+        x = self.fc2(x)
+
+        return x
+
+class ConvNet3DResidual(nn.Module, Configurable):
+    def __init__(self, config):
+        super().__init__()
+        Configurable.__init__(self, config)
+        self.activation = activation_factory(self.config["activation"])
+        self.conv1 = nn.Conv3d(self.config["in_channels"], 32, kernel_size=(1, 7, 7), stride=(1, 1, 1), padding =(0,3,3))
+        self.conv2 = nn.Conv3d(32, 32, kernel_size=(3, 5, 5), stride=(1, 1, 1), padding = (1,2,2))
+        self.conv3 = nn.Conv3d(32, 64,  kernel_size=(3, 5, 5), stride=(1, 1, 1))
+        self.conv4 = nn.Conv3d(64, 64, kernel_size=(1, 5, 5), stride=(1, 1, 1))
+        self.maxpool1 = nn.MaxPool3d(kernel_size=(3, 5, 5), stride=(1, 2, 2))
+        self.bn1 = nn.BatchNorm3d(64)
+        # MLP Head
+        # Number of Linear input connections depends on output of conv2d layers
+        # and therefore the input image size, so compute it.
+        def conv2d_size_out(size, kernel_size=5, stride=1, padding=0):
+            return (size + 2 * padding - (kernel_size - 1) - 1) // stride + 1
+
+        def maxpool_size_out(size, kernel_size=5, stride=2, padding=0):
+            return (size + 2 * padding - (kernel_size - 1) - 1) // stride + 1
+
+        convw = conv2d_size_out(conv2d_size_out(maxpool_size_out(conv2d_size_out(conv2d_size_out(self.config["in_width"], kernel_size=7, stride=1,padding=3), kernel_size=5, stride=1,padding=2))))
+        convh = conv2d_size_out(conv2d_size_out(maxpool_size_out(conv2d_size_out(conv2d_size_out(self.config["in_height"], kernel_size=7, stride=1,padding=3), kernel_size=5, stride=1,padding=2))))
+        convd = conv2d_size_out(conv2d_size_out(maxpool_size_out(conv2d_size_out(conv2d_size_out(self.config["in_depth"], kernel_size=1, stride=1,padding=0), kernel_size=3, stride=1,padding=1),  kernel_size=3, stride=1),kernel_size=3, stride=1),kernel_size=1, stride=1)
+
+
+        assert convh > 0 and convw > 0
+        self.config["head_mlp"]["in"] = convw * convh * convd * 64
+        self.config["head_mlp"]["out"] = self.config["out"]
+
+        self.fc1 = nn.Linear(self.config["head_mlp"]["in"], 256)
+        self.fc2 = nn.Linear(256, self.config["head_mlp"]["out"])
+
+    @classmethod
+    def default_config(cls):
+        return {
+            "in_channels": None,
+            "in_height": None,
+            "in_width": None,
+            "activation": "RELU",
+            "head_mlp": {
+                "type": "MultiLayerPerceptron",
+                "in": None,
+                "layers": [],
+                "activation": "RELU",
+                "reshape": "True",
+                "out": None
+            },
+            "out": None
+        }
+
+    def num_flat_features(self, x):
+        size = x.size()[1:]  # all dimensions except the batch dimension
+        num_features = 1
+        for s in size:
+            num_features *= s
+        return num_features
+
+    def forward(self, x):
+        """
+            Forward convolutional network
+        :param x: tensor of shape BCHW
+        """
+        x = self.activation((self.conv1(x)))
+        x_residual1 = x
+        x = self.activation((self.conv2(x)))
+        x += x_residual1
+        x = self.maxpool1(x)
+        x = self.activation((self.conv3(x)))
+        x = self.bn1(x)
+        x = self.activation((self.conv4(x)))
+
+        x = torch.flatten(x, 1)
+        # x = x.view(-1, self.num_flat_features(x))
+        x = self.activation(self.fc1(x))
+        x = self.fc2(x)
+
+        return x
 
 
 class EgoAttention(BaseModule, Configurable):
@@ -190,7 +657,7 @@ class EgoAttention(BaseModule, Configurable):
             mask = mask.view((batch_size, 1, 1, n_entities)).repeat((1, self.config["heads"], 1, 1))
         value, attention_matrix = attention(query_ego, key_all, value_all, mask,
                                             nn.Dropout(self.config["dropout_factor"]))
-        result = (self.attention_combine(value.reshape((batch_size, self.config["feature_size"]))) + ego.squeeze(1))/2
+        result = (self.attention_combine(value.reshape((batch_size, self.config["feature_size"]))) + ego.squeeze(1)) / 2
         return result, attention_matrix
 
 
@@ -230,7 +697,8 @@ class SelfAttention(BaseModule, Configurable):
             mask = mask.view((batch_size, 1, 1, n_entities)).repeat((1, self.config["heads"], 1, 1))
         value, attention_matrix = attention(query_all, key_all, value_all, mask,
                                             nn.Dropout(self.config["dropout_factor"]))
-        result = (self.attention_combine(value.reshape((batch_size, n_entities, self.config["feature_size"]))) + input_all)/2
+        result = (self.attention_combine(
+            value.reshape((batch_size, n_entities, self.config["feature_size"]))) + input_all) / 2
         return result, attention_matrix
 
 
@@ -415,12 +883,22 @@ def size_model_config(env, model_config):
         obs_shape = env.observation_space.shape
     elif isinstance(env.observation_space, spaces.Tuple):
         obs_shape = env.observation_space.spaces[0].shape
-    if model_config["type"] == "ConvolutionalNetwork":  # Assume CHW observation space
+
+    if len(obs_shape) == 3: # Assume CHW observation space
         model_config["in_channels"] = int(obs_shape[0])
         model_config["in_height"] = int(obs_shape[1])
         model_config["in_width"] = int(obs_shape[2])
+        model_config["inputc"] = (model_config["in_channels"], model_config["in_height"] ,  model_config["in_width"])
+
+    elif len(obs_shape) == 4: # Assume CDHW observation space conv 3D
+        model_config["in_channels"] = int(obs_shape[0])
+        model_config["in_depth"] = int(obs_shape[1])
+        model_config["in_height"] = int(obs_shape[2])
+        model_config["in_width"] = int(obs_shape[3])
+        model_config["inputc"] = (model_config["in_channels"],  model_config["in_depth"] ,model_config["in_height"] ,  model_config["in_width"])
     else:
         model_config["in"] = int(np.prod(obs_shape))
+        model_config["inputc"] = (int(obs_shape[0]), int(obs_shape[1]))
 
     if isinstance(env.action_space, spaces.Discrete):
         model_config["out"] = env.action_space.n
@@ -428,15 +906,29 @@ def size_model_config(env, model_config):
         model_config["out"] = env.action_space.spaces[0].n
 
 
+
 def model_factory(config: dict) -> nn.Module:
     if config["type"] == "MultiLayerPerceptron":
         return MultiLayerPerceptron(config)
     elif config["type"] == "DuelingNetwork":
         return DuelingNetwork(config)
-    elif config["type"] == "ConvolutionalNetwork":
-        return ConvolutionalNetwork(config)
+    elif config["type"] == "ConvNetAtari":
+        return ConvNetAtari(config)
+    elif config["type"] == "ConvNetAtariDoubleQ":
+        return ConvNetAtariDoubleQ(config)
+    elif config["type"] == "ConvNet3Layer":
+        return ConvNet3Layer(config)
+    elif config["type"] == "ConvNet3D":
+        return ConvNet3D(config)
+    elif config["type"] == "ConvNet3DResidual":
+        return ConvNet3DResidual(config)
+    elif config["type"] == "ConvNet3LayerVariableKernel":
+        return ConvNet3LayerVariableKernel(config)
+    elif config["type"] == "ConvNetStanfordMARLNoRes":
+        return ConvNetStanfordMARLNoRes(config)
+    elif config["type"] == "ConvNetStanfordMARLRes":
+        return ConvNetStanfordMARLRes(config)
     elif config["type"] == "EgoAttentionNetwork":
         return EgoAttentionNetwork(config)
     else:
         raise ValueError("Unknown model type")
-
