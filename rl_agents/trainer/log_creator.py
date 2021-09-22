@@ -48,6 +48,11 @@ class LogCreator():
         self.rewards_keys_episode = []
         self.update_field_once = 1
         self.TIMESTEP_FIELD_NAMES_EXTRA = copy.deepcopy(self.TIMESTEP_FIELD_NAMES)
+        self.mission_type =  self.evaluation.env.config['scenario']['mission_type']
+        if self.mission_type == 'none':
+            self.mission_log =False
+        else:
+            self.mission_log = True
 
         self.log_reward = True
         self.log_distance = True
@@ -331,7 +336,7 @@ class LogCreator():
                     writer.writerow(episode_individual_log)
 
         ### Log for mission vehicle
-        if self.mission_vehicle_id in vehicle_ids:
+        if self.mission_vehicle_id in vehicle_ids and self.mission_log:
             mission_vehicle_index = np.where(vehicle_ids == self.mission_vehicle_id)[0][0]
 
             mission_vehicle_average_speed = vehicles_average_speeds[mission_vehicle_index]
