@@ -1,0 +1,8 @@
+{
+    "info": " exp_merge_3 Same as Exp_merge_2, with sympathy",
+    "base_config": "configs/experiments/exp_merge_2.json",
+
+    "reward": {
+        "sympathy_flag": true
+    }
+}

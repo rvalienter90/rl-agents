@@ -1,0 +1,21 @@
+{
+    "info": "exp_merge_9 similar to 3 but with 3 lanes, humans randomly everywhere, 4 agents platooning similar to before",
+    "base_config": "configs/experiments/exp_merge_3.json",
+
+    "lanes_count": 3,
+    "cruising_vehicles_front":true,
+    "ego_spacing": 3,
+    "cruising_vehicles_front_count":5,
+    "reward": {
+        "target_lane": 2
+    },
+    "action": {
+    "type": "MultiAgentAction",
+        "action_config": {
+            "type": "DiscreteMetaAction",
+            "longitudinal": true,
+            "lateral": true,
+            "stop": false
+        }
+    }
+}

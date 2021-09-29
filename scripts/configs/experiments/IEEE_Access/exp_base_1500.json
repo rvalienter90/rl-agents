@@ -1,0 +1,43 @@
+{
+    "info": " IEEE Access 1500 base ",
+    "base_config": "configs/experiments/IEEE_Access/exp_base.json",
+
+
+    "lanes_count": 3,
+    "vehicles_count": 12,
+    "cruising_vehicles_front":true,
+    "cruising_vehicles_front_random_everywhere": true,
+    "cruising_vehicles_front_count":10,
+    "cruising_vehicles_front_initial_position":50,
+    "offscreen_rendering": true,
+
+     "merging_vehicle": {
+        "speed": 25,
+        "initial_position": [95, 0],
+        "random_offset_merging": [5, 5],
+        "randomize_speed_merging": true,
+        "randomize": true
+    },
+
+    "reward": {
+        "coop_reward_type": "multi_agent_tuple",
+        "reward_type": "merging_reward",
+        "normalize_reward": true,
+        "reward_speed_range": [15, 35],
+        "collision_reward": -5,
+        "on_desired_lane_reward": 0.3,
+        "high_speed_reward": 1,
+        "lane_change_reward": -0.2,
+        "target_lane": 2,
+        "distance_reward": 0,
+        "distance_merged_vehicle_reward": 0,
+        "distance_reward_type": "min",
+        "successful_merging_reward": 10,
+        "continuous_mission_reward": true,
+        "cooperative_flag": true,
+        "sympathy_flag": true,
+        "cooperative_reward": 4
+
+    }
+
+}

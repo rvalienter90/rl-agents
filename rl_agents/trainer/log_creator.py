@@ -14,15 +14,15 @@ class LogCreator():
     EPISODE_FIELD_NAMES = ['episode', 'episode_reward', 'episode_length', 'episode_average_speed_all',
                            'episode_average_speed_controlled', 'episode_average_speed_human',
                            'episode_average_distance_all', 'episode_average_distance_controlled',
-                           'episode_average_distance_human', 'mission_time']
+                           'episode_average_distance_human', 'mission_time','crashed_hv','crashed_av','scenario']
 
     EPISODE_INDIVIDUAL_FIELD_NAMES = ['episode', 'vehicle_id', 'vehicle_is_controlled', 'episode_reward',
                                       'episode_length', 'vehicle_average_speed', 'vehicle_average_distance',
-                                      'mission_time']
+                                      'mission_time','crashed_hv','crashed_av','scenario']
 
     EPISODE_MISSION_FIELD_NAMES = ['episode', 'vehicle_id', 'vehicle_is_controlled', 'episode_reward',
                                    'episode_length', 'vehicle_average_speed', 'vehicle_average_distance',
-                                   'mission_time']
+                                   'mission_time','crashed_hv','crashed_av','scenario']
 
     # common field or different ? TIMESTEP_FIELD_NAMES_CONTROLLED ?
     # TIMESTEP_FIELD_NAMES = ['timestep', 'is_controlled', 'vehicle_id', 'timestep_reward', 'vehicle_speed',
@@ -49,7 +49,7 @@ class LogCreator():
         self.update_field_once = 1
         self.TIMESTEP_FIELD_NAMES_EXTRA = copy.deepcopy(self.TIMESTEP_FIELD_NAMES)
         self.mission_type =  self.evaluation.env.config['scenario']['mission_type']
-        if self.mission_type == 'none':
+        if self.mission_type == 'none' or self.evaluation.env.scenario.random_scenario is True:
             self.mission_log =False
         else:
             self.mission_log = True
@@ -116,6 +116,7 @@ class LogCreator():
 
         # speed calculations
         # this keeps the sum of speeds over timesteps of an episode for all vehicles
+        self.vehicles_count = len(self.evaluation.env.road.vehicles)
         speeds_container = np.zeros(self.vehicles_count)
 
         # this keeps the sum of rewards components over timesteps of an episode for all controlled vehicles
@@ -153,6 +154,9 @@ class LogCreator():
 
         # -1 means mission was never accomplished
         self.mission_time = -1
+        vehicles_speeds_avg_by_step = []
+        controlled_vehicles_speeds_avg_by_step = []
+        human_vehicles_speeds_avg_by_step = []
         for step in range(episode_length):
             # TODO: this is currently only for merging but should be general
             info_at_timestep = episode_info[step]
@@ -160,7 +164,17 @@ class LogCreator():
 
             rewards_at_timestep = rewards_individual_agents[step]
             try:
-                speeds_container = np.add(speeds_container, info_at_timestep['vehicle_speeds'])
+                vehicles_speeds=info_at_timestep['vehicle_speeds']
+                if self.evaluation.env.scenario.random_scenario is False:
+                    speeds_container = np.add(speeds_container, vehicles_speeds)
+                vehicles_speeds_avg_by_step.append(np.average(vehicles_speeds))
+
+                mask = np.array(info_at_timestep['vehicle_is_controlled'])
+                controlled_vehicles_speeds = np.array(vehicles_speeds)[mask==1]
+                controlled_vehicles_speeds_avg_by_step.append(np.average(controlled_vehicles_speeds))
+
+                human_vehicles_speeds = np.array(vehicles_speeds)[mask==0]
+                human_vehicles_speeds_avg_by_step.append(np.average(human_vehicles_speeds))
             except:
                 print(" Error updating speed container")
             if self.log_reward:
@@ -216,24 +230,34 @@ class LogCreator():
                         writer.writerow(individual_timestep_log)
 
         ### Calculating average values (averaged over the timesteps of an episode)
-        mask = episode_info[0]['vehicle_is_controlled']
-        ## Speeds
-        # for all vehicles separately
-        try:
-            vehicles_average_speeds = speeds_container / episode_length
-        except:
-            vehicles_average_speeds = 0
-        try:
-            controlled_average_speeds = np.multiply(vehicles_average_speeds, mask)
-        except:
-            controlled_average_speeds = 0
 
-        human_average_speeds = vehicles_average_speeds - controlled_average_speeds
-        # averaged over all vehicles
-        episode_average_speed_all = sum(vehicles_average_speeds) / self.vehicles_count
-        episode_average_speed_controlled = sum(controlled_average_speeds) / self.controlled_vehicles_count
-        episode_average_speed_human = sum(human_average_speeds) / self.humans_count
+        if self.evaluation.env.scenario.random_scenario is False and (self.evaluation.env.scenario.road_type == "road_merge" or self.evaluation.env.scenario.road_type == "road_exit"):
+            mask = episode_info[0]['vehicle_is_controlled']
+            ## Speeds
+            # for all vehicles separately
+            try:
+                vehicles_average_speeds = speeds_container / episode_length
+            except:
+                vehicles_average_speeds = 0
+            try:
+                controlled_average_speeds = np.multiply(vehicles_average_speeds, mask)
+                controlled_average_speeds_error = False
+            except:
+                controlled_average_speeds_error = True
+                controlled_average_speeds = 0
 
+            human_average_speeds = vehicles_average_speeds - controlled_average_speeds
+            # averaged over all vehicles
+            episode_average_speed_all = sum(vehicles_average_speeds) / self.vehicles_count
+            if controlled_average_speeds_error:
+                episode_average_speed_controlled =-1
+            else:
+                episode_average_speed_controlled = sum(controlled_average_speeds) / self.controlled_vehicles_count
+            episode_average_speed_human = sum(human_average_speeds) / self.humans_count
+        else:
+            episode_average_speed_all = np.average(vehicles_speeds_avg_by_step)
+            episode_average_speed_human = np.average(human_vehicles_speeds_avg_by_step)
+            episode_average_speed_controlled = np.average(controlled_vehicles_speeds_avg_by_step)
         ## Distances
         # here we remove the entries that have a distance_counter==0 because that means they never had a vehicle in
         # front of them and hence should not be considered in the averaging
@@ -262,6 +286,10 @@ class LogCreator():
 
             episode_average_reward_log = {self.rewards_keys_episode[i]: episode_rewards_components_average[i] for i in
                                           range(0, len(self.rewards_keys_episode))}
+
+        crashed_hv = int(any(vehicle.crashed for vehicle in self.evaluation.env.road.vehicles))
+        crashed_av = int(any(vehicle.crashed for vehicle in self.evaluation.env.controlled_vehicles))
+        scenario = self.evaluation.env.scenario.road_types_idx
         episode_average_log = {'episode': episode,
                                'episode_reward': reward_total_episode,
                                'episode_length': episode_length,
@@ -271,7 +299,11 @@ class LogCreator():
                                # 'episode_average_distance_all': episode_average_distance_all,
                                # 'episode_average_distance_controlled': episode_average_distance_controlled,
                                # 'episode_average_distance_human': episode_average_distance_human,
-                               'mission_time': self.mission_time}
+                               'mission_time': self.mission_time,
+                               'crashed_hv': crashed_hv,
+                               'crashed_av': crashed_av,
+                               'scenario': scenario,
+                               }
 
         if self.log_reward:
             episode_average_log.update(episode_average_reward_log)
@@ -353,6 +385,7 @@ class LogCreator():
                 mission_reward_index = np.where(vehicle_reward_ids == self.mission_vehicle_id)[0][0]
                 mission_vehicle_reward = vehicle_rewards[mission_reward_index]
 
+
             episode_mission_log = {'episode': episode,
                                    'vehicle_id': self.mission_vehicle_id,
                                    'vehicle_is_controlled': mission_vehicle_is_controlled,
@@ -360,7 +393,11 @@ class LogCreator():
                                    'episode_length': episode_length,
                                    'vehicle_average_speed': mission_vehicle_average_speed,
                                    'vehicle_average_distance': mission_vehicle_average_distance,
-                                   'mission_time': self.mission_time}
+                                   'mission_time': self.mission_time,
+                                   'crashed_hv': crashed_hv,
+                                   'crashed_av': crashed_av,
+                                   'scenario': scenario,
+                                   }
 
             if self.mission_vehicle_id in episode_info[0]['reward_ids']:
                 mission_vehicle_reward_index = episode_info[0]['reward_ids'].index(self.mission_vehicle_id)

@@ -1,0 +1,11 @@
+{
+    "info": "exp_merge_16 similar to 12 with length of history = 4",
+    "base_config": "configs/experiments/exp_merge_12.json",
+
+     "observation": {
+        "action_history_count": 4
+     },
+    "reward": {
+        "target_lane": 2
+    }
+}

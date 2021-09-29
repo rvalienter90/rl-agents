@@ -1,0 +1,11 @@
+{
+    "info": " exp_merge_1 merging with action history binary (length 10), without cooperation, without sympathy, merging=human, 1 lane, only humans in the back, 4 agents in front, initialization is randomized ",
+    "base_config": "configs/experiments/exp_merge_0.json",
+
+    "controlled_baseline_vehicle": false,
+
+    "reward": {
+        "cooperative_flag": false,
+        "sympathy_flag": false
+    }
+}

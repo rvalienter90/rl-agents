@@ -1,0 +1,15 @@
+{
+  "info": "Exp_behavior Conv3D grid",
+  "base_config": "configs/experiments/Behavior/exp_behavior_Grid_Conv2D.json",
+
+    "agent_config": {
+    "model": {
+      "type": "ConvNet3D"
+    }
+    },
+  "observation": {
+    "observation_config": {
+      "conv3D_stack": true
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "info": "Exp_behavior MultiLayerPerceptron",
+  "base_config": "configs/experiments/Multienv/exp_agressive_Grid_DQN.json",
+
+  "lanes_count": 3,
+  "vehicles_count": 12,
+  "cruising_vehicles_front": true,
+  "cruising_vehicles_front_random_everywhere": true,
+  "cruising_vehicles_front_count": 10,
+  "cruising_vehicles_front_initial_position": 50
+}

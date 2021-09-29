@@ -1,0 +1,200 @@
+{
+    "info": " exp_merge_0 Merging, agents are IDM, 1 lane, only humans in the back, 4 agents in front, initialization is randomized",
+    "id": "highway-v0",
+    "import_module": "highway_env",
+    "observation": {
+        "type": "MultiAgentObservation",
+
+        "observation_config": {
+            "type": "Kinematics"
+        },
+        "vehicles_count": 5,
+        "features": ["presence", "x", "y", "vx", "vy", "is_controlled"],
+        "action_history_type": "binary",
+        "action_history_count": 10,
+        "absolute": false,
+        "order": "sorted_by_id",
+        "see_behind": false,
+        "normalize": true,
+        "mission_vehicle_observation": false
+    },
+    "action": {
+        "type": "MultiAgentAction",
+        "action_config": {
+            "type": "DiscreteMetaAction",
+            "longitudinal": true,
+            "lateral": false,
+            "stop": false
+        }
+    },
+
+    "tracker_logging": true,
+    "controlled_vehicles": 4,
+    "simulation_frequency": 15,
+    "policy_frequency": 1,
+    "other_vehicles_type": "highway_env.vehicle.behavior.IDMVehicle",
+    "screen_width": 1200,
+    "screen_height": 300,
+    "centering_position": [0.3, 0.5],
+    "scaling": 5.5,
+    "show_trajectories": false,
+    "render_agent": true,
+    "offscreen_rendering": false,
+    "manual_control": false,
+    "lanes_count": 1,
+    "vehicles_count": 12,
+    "cruising_vehicles_front":false,
+    "cruising_vehicles_front_random_everywhere": false,
+    "cruising_vehicles_front_count":10,
+    "cruising_vehicles_front_initial_position":50,
+    "initial_lane_id": 0,
+    "duration": 15,
+    "ego_spacing": 2,
+    "vehicles_density": 1,
+    "offroad_terminal": false,
+    "initial_spacing": 1,
+    "real_time_rendering": true,
+    "vehicle_label": true,
+    "controlled_baseline_vehicle": true,
+
+    "scenario": {
+        "scenario_number": 0,
+        "road_type": "road_merge",
+
+        "lane_count_interval": [1, 4],
+        "random_offset": [-4, 4],
+        "before_merging": 100,
+        "randomize_before": false,
+
+        "converging_merging": 120,
+        "randomize_converging": false,
+        "during_merging": 110,
+        "randomize_merge": false,
+        "random_lane_count": false,
+        "after_merging": 1100,
+        "before_exit": 100,
+        "converging_exit":50,
+        "taking_exit": 40,
+        "during_exit": 100,
+        "after_exit": 1100,
+
+        "randomize_vehicles": true,
+        "random_offset_vehicles": [-2, 4],
+        "randomize_speed": false,
+        "randomize_speed_offset": [-1,1],
+        "controlled_vehicle_speed": 30,
+
+        "random_controlled_vehicle": false,
+        "total_number_of_vehicles": 13,
+        "prob_of_controlled_vehicle": 0.5,
+        "mission_type": "merging"
+
+
+    },
+
+    "baseline_vehicle": {
+        "acc_max": 6,
+        "comfort_acc_max": 4,
+        "comfort_acc_min": -12,
+        "distance_wanted": 0.51,
+        "time_wanted": 0.5,
+        "delta": 4,
+        "speed": 25,
+        "enable_lane_change": false,
+
+        "vehicles_type": "highway_env.vehicle.behavior.CustomVehicle",
+        "length": 5.0,
+        "width": 2.0,
+        "max_speed": 40
+    },
+
+    "cruising_vehicle": {
+        "acc_max": 6,
+        "comfort_acc_max": 4,
+        "comfort_acc_min": -12,
+        "distance_wanted": 0.51,
+        "time_wanted": 0.5,
+        "delta": 4,
+        "speed": 23,
+        "enable_lane_change": false,
+
+        "vehicles_type": "highway_env.vehicle.behavior.CustomVehicle",
+        "length": 5.0,
+        "width": 2.0,
+        "max_speed": 40
+    },
+
+    "merging_vehicle": {
+
+        "acc_max": 6,
+        "comfort_acc_max": 3,
+        "comfort_acc_min": -5,
+        "distance_wanted": 0.5,
+        "time_wanted": 0.5,
+        "delta": 4,
+        "speed": 32,
+        "initial_position": [98, 0],
+        "random_offset_merging": [-15, 15],
+        "randomize_speed_merging": false,
+        "enable_lane_change": false,
+        "controlled_vehicle": false,
+        "vehicles_type": "highway_env.vehicle.behavior.CustomVehicle",
+        "set_route": false,
+        "randomize": true,
+        "id": -1,
+
+        "length": 5.0,
+        "width": 2.0,
+        "max_speed": 40
+    },
+
+    "exit_vehicle": {
+        "acc_max": 6,
+        "comfort_acc_max": 3,
+        "comfort_acc_min": -5,
+        "distance_wanted": 0.5,
+        "time_wanted": 0.5,
+        "delta": 4,
+        "speed": 25,
+        "initial_position": [78, 0],
+        "enable_lane_change": true,
+        "controlled_vehicle": false,
+        "vehicles_type": "highway_env.vehicle.behavior.CustomVehicle",
+        "set_route":true,
+        "randomize":true,
+        "id": -1,
+
+        "length": 5.0,
+        "width": 2.0,
+        "max_speed": 40
+    },
+
+    "stopping_vehicle": {
+        "stop_flag": true,
+        "stop_at": 250,
+        "stop_for": 1,
+        "turn": "right",
+        "id": 5
+    },
+
+    "reward": {
+        "coop_reward_type": "multi_agent_tuple",
+        "reward_type": "merging_reward",
+        "normalize_reward": true,
+        "reward_speed_range": [20, 40],
+        "collision_reward": -10,
+        "on_desired_lane_reward": 0.3,
+        "high_speed_reward": 0.6,
+        "lane_change_reward": -0.2,
+        "target_lane": 0,
+        "distance_reward": 0,
+        "distance_merged_vehicle_reward": 0,
+        "distance_reward_type": "min",
+        "successful_merging_reward": 5,
+        "continuous_mission_reward": true,
+        "cooperative_flag": false,
+        "sympathy_flag": false,
+        "cooperative_reward": 0.9
+
+    }
+}

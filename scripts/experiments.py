@@ -27,6 +27,8 @@ Options:
   --individual_reward_tensorboard   Save individual reward for each agent in tensorboard.
   --name-from-envconfig           Name the output folder from the corresponding config files
   --agent <str>                Agent config [default: None].
+  --offscreen_rendering        Render offscreen.
+  --output_folder <str>        Agent config [default: out].
 """
 import datetime
 import os
@@ -81,6 +83,9 @@ def evaluate(environment_config, agent_config, options):
             agent_config["exploration"]["tau"] = env.config["policy_frequency"] * env.config["duration"] * int(
                 options['--episodes'] * env.config["controlled_vehicles"]) / 50
     agent = load_agent(agent_config, env)
+    # TODO diferent display options for agent, env, rewards
+    if options['--offscreen_rendering']:
+        env.config['offscreen_rendering'] = True
 
     evaluation_train = Evaluation(env,
                                   agent,

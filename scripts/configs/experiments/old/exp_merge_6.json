@@ -1,0 +1,18 @@
+{
+    "info": " exp_merge_6 Similar to 3 with merging=controlled",
+    "base_config": "configs/experiments/exp_merge_3.json",
+
+     "merging_vehicle": {
+          "controlled_vehicle": true
+     },
+
+     "observation": {
+      "action": {
+        "action_config": {
+          "longitudinal": true,
+          "lateral": true,
+          "stop": false
+        }
+      }
+    }
+}

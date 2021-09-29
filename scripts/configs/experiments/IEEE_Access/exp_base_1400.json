@@ -1,0 +1,11 @@
+{
+    "info": " IEEE Access 1400 base ",
+    "base_config": "configs/experiments/IEEE_Access/exp_base_1300.json",
+
+    "reward": {
+        "collision_reward": -5,
+        "successful_merging_reward": 10,
+        "cooperative_reward": 4
+    }
+
+}

@@ -1,0 +1,1 @@
+{"info": "exp_merge_902 similar to 900_Base with initial_position= 85 and random_offset_merging= 10 and speed= 25", "additional_folder_name": "exp_merge_902", "base_config": "configs/experiments/exp_merge_900_base.json", "reward": {}, "merging_vehicle": {"initial_position": [85, 0], "random_offset_merging": [-10, 10], "speed": 25}, "tracker_logging": true}

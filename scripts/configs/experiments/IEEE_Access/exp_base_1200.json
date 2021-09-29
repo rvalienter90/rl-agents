@@ -1,0 +1,13 @@
+{
+    "info": " IEEE Access 1200 base ",
+    "base_config": "configs/experiments/IEEE_Access/exp_base.json",
+
+    "merging_vehicle": {
+        "speed": 25,
+        "initial_position": [95, 0],
+        "random_offset_merging": [5, 5],
+        "randomize_speed_merging": true,
+        "randomize": true
+    }
+
+}

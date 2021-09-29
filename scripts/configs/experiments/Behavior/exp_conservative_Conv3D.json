@@ -1,0 +1,27 @@
+{
+  "info": "Exp_behavior MultiLayerPerceptron",
+  "base_config": "configs/experiments/Behavior/exp_behavior_HeatMap_Conv3D.json",
+
+
+  "cruising_vehicle": {
+      "acc_max": 6,
+      "comfort_acc_max": 2,
+      "comfort_acc_min": -4,
+      "distance_wanted": 7,
+      "time_wanted": 2,
+      "delta": 4,
+      "speed": 25,
+      "enable_lane_change": false,
+      "vehicles_type": "highway_env.vehicle.behavior.CustomVehicle",
+      "length": 5.0,
+      "width": 2.0,
+      "max_speed": 40,
+
+       "politeness": 0.7,
+      "lane_change_min_acc_gain": 0.4,
+      "lane_change_max_braking_imposed": 2.0
+    }
+
+
+
+}

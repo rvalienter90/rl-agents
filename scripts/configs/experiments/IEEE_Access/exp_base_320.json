@@ -1,0 +1,5 @@
+{
+    "info": "same as exp_300 with action history = [2 10]  action history type = [binary  xy_discrete discrete]",
+    "base_config": "configs/experiments/IEEE_Access/exp_merge_300.json"
+
+}

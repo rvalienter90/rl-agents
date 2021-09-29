@@ -1,0 +1,17 @@
+{
+  "info": "Exp_behavior Conv2D Heatmap",
+  "base_config": "configs/experiments/Behavior/exp_behavior_base.json",
+
+"observation": {
+    "type": "MultiAgentObservation",
+    "observation_config": {
+      "conv3D_stack": false
+    }
+  },
+
+    "agent_config": {
+    "model": {
+      "type": "ConvNetAtari"
+    }
+    }
+}

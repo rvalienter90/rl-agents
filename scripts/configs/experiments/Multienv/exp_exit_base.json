@@ -1,0 +1,68 @@
+{
+  "info": "Exit env",
+  "additional_folder_name": "exp_exit",
+  "base_config": "configs/experiments/Multienv/exp_base.json",
+
+  "lanes_count": 2,
+  "merging_vehicle": {
+    "vehicles_type": "highway_env.vehicle.behavior.CustomVehicle",
+    "controlled_vehicle": false
+  },
+  "controlled_vehicles": 4,
+  "duration": 18,
+  "scenario": {
+    "scenario_number": 0,
+    "road_type": "road_exit",
+    "exit_humans": 80,
+    "exit_controlled": 50,
+    "exit_length": 35,
+    "after_exit": 1000,
+    "mission_type": "exit"
+  },
+  "exit_vehicle": {
+    "acc_max": 6,
+    "comfort_acc_max": 9,
+    "comfort_acc_min": -12,
+    "distance_wanted": 0.5,
+    "time_wanted": 0.5,
+    "delta": 4,
+    "speed": 25,
+    "politeness": 0,
+    "lane_change_min_acc_gain": 0,
+    "lane_change_max_braking_imposed": 12,
+    "initial_position": [
+      74,
+      0
+    ],
+    "enable_lane_change": true,
+    "controlled_vehicle": false,
+    "vehicles_type": "highway_env.vehicle.behavior.CustomVehicle",
+    "set_route": true,
+    "id": -1,
+    "length": 5.0,
+    "width": 2.0,
+    "max_speed": 40,
+    "randomize": true,
+    "random_offset_exit": [
+     1,
+     1
+    ]
+  },
+  "cruising_vehicle": {
+    "acc_max": 6,
+    "comfort_acc_max": 9,
+    "comfort_acc_min": -12,
+    "distance_wanted": 0.5,
+    "time_wanted": 0.5,
+    "delta": 4,
+    "speed": 25,
+    "enable_lane_change": false,
+    "vehicles_type": "highway_env.vehicle.behavior.CustomVehicle",
+    "length": 5.0,
+    "width": 2.0,
+    "max_speed": 40,
+    "politeness": 0,
+    "lane_change_min_acc_gain": 0,
+    "lane_change_max_braking_imposed": 12
+  }
+}

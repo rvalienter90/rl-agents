@@ -20,6 +20,7 @@ from rl_agents.trainer.monitor import MonitorV2
 # Modifications
 import time
 from rl_agents.trainer.log_creator import LogCreator
+import pickle
 
 logger = logging.getLogger(__name__)
 
@@ -80,8 +81,11 @@ class Evaluation(object):
         self.display_env = display_env
 
         # Modifications
+        self.dataset_by_episode =[]
         self.env.options = copy.deepcopy(options)
         self.options = copy.deepcopy(options)
+        if options['--output_folder']:
+            self.OUTPUT_FOLDER = options['--output_folder']
 
         self.directory = Path(directory or self.default_directory)
         if self.options["--name-from-envconfig"]:
@@ -179,8 +183,9 @@ class Evaluation(object):
 
         for self.episode in range(self.num_episodes):
             self.episode_start_time = time.time()
+            self.env.episode = self.episode
 
-            if (self.num_episodes - self.episode) < 4:
+            if (self.num_episodes - self.episode) < 50:
                 # self.create_timestep_log = True
                 self.monitor.options['--video_save_freq'] = 1
 
@@ -190,6 +195,7 @@ class Evaluation(object):
                 self.seed(self.episode)
             self.reset()
             rewards = []
+
             start_time = time.time()
 
             while not terminal:
@@ -214,9 +220,23 @@ class Evaluation(object):
                     pass
 
             # End of episode
+            self.save_dataset(info)
             duration = time.time() - start_time
             self.after_all_episodes(self.episode, self.rewards, duration)
             self.after_some_episodes(self.episode, self.rewards)
+
+    def save_dataset(self,info):
+
+        name = str(info["episode"]) + '.pickle'
+        path = os.path.join(self.run_directory ,'Dataset')
+        file = os.path.join(path,name)
+        if path is not None:
+            os.makedirs(path, exist_ok=True)
+        # fullpath = file + name
+        with open(file, 'wb') as handle:
+            pickle.dump(self.dataset_by_episode, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        self.dataset_by_episode = []
 
     def step(self):
         """
@@ -251,14 +271,42 @@ class Evaluation(object):
         except AttributeError:
             pass
 
+        for idx, controlled_vehicle in enumerate(self.env.controlled_vehicles):
+            controlled_vehicle.new_action = None
         # Step the environment
         previous_observation, action = self.observation, actions[0]
         self.observation, reward, terminal, info = self.monitor.step(action)
+        for idx, controlled_vehicle in enumerate(self.env.controlled_vehicles):
+            if controlled_vehicle.new_action!=None:
+                if isinstance(action,list):
+                    action[idx] = controlled_vehicle.new_action
+                else:
+                    action=controlled_vehicle.new_action
 
         # Record the experience.
         if not self.test_stable_baseline:
             try:
                 self.agent.record(previous_observation, action, reward, self.observation, terminal, info)
+
+                save_data_set = True
+                if save_data_set:
+                    data = {
+                        'state': previous_observation,
+                        'action': action,
+                        'reward': reward,
+                        'next_state': self.observation,
+                        'done': terminal,
+                        'info': info
+                    }
+                    self.dataset_by_episode.append(data)
+                    # name = str(info["episode"])+ "_" + str(info["timestep"]) + '.pickle'
+                    # path = os.path.join(self.run_directory ,'Dataset')
+                    # file = os.path.join(path,name)
+                    # if path is not None:
+                    #     os.makedirs(path, exist_ok=True)
+                    # # fullpath = file + name
+                    # with open(file, 'wb') as handle:
+                    #     pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
             except NotImplementedError:
                 pass
 

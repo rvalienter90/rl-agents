@@ -18,6 +18,9 @@ evaluate
 2
 --environment
 configs/experiments/IROS/exp_merge_IROS_7154.json
+--name-from-envconfig
+--offscreen_rendering
+--output_folder "out2"
 
 
 evaluate

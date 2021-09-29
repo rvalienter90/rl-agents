@@ -1,0 +1,13 @@
+{
+  "info": "Multi env",
+  "additional_folder_name": "exp_exit",
+  "base_config": "configs/experiments/Multienv/exp_base_multi.json",
+
+  "controlled_vehicles": 1,
+  "observation": {
+    "type": "Kinematics"
+    },
+  "action": {
+    "type": "DiscreteMetaAction"
+  }
+}

@@ -1,0 +1,136 @@
+{
+    "info": "1110s",
+    "base_config": "configs/experiments/IEEE_Access/exp_base.json",
+
+    "reward": {
+            "collision_reward": -20,
+            "continuous_mission_reward": true,
+            "coop_reward_type": "multi_agent_tuple",
+            "cooperative_flag": true,
+            "cooperative_reward": 0.5,
+            "distance_merged_vehicle_reward": 0,
+            "distance_reward": 0,
+            "distance_reward_type": "min",
+            "high_speed_reward": 1,
+            "lane_change_reward": -0.2,
+            "normalize_reward": true,
+            "on_desired_lane_reward": 0.3,
+            "reward_speed_range": [
+                15,
+                35
+            ],
+            "reward_type": "merging_reward",
+            "successful_merging_reward": 10,
+            "sympathy_flag": true,
+            "target_lane": 0
+        },
+
+    "scenario": {
+            "after_exit": 1100,
+            "after_merging": 1100,
+            "before_exit": 100,
+            "before_merging": 100,
+            "controlled_vehicle_speed": 30,
+            "converging_exit": 50,
+            "converging_merging": 120,
+            "during_exit": 100,
+            "during_merging": 110,
+            "lane_count_interval": [
+                1,
+                4
+            ],
+            "mission_type": "merging",
+            "prob_of_controlled_vehicle": 0.5,
+            "random_controlled_vehicle": false,
+            "random_lane_count": false,
+            "random_offset": [
+                -4,
+                4
+            ],
+            "random_offset_vehicles": [
+                -2,
+                2
+            ],
+            "randomize_before": false,
+            "randomize_converging": false,
+            "randomize_merge": false,
+            "randomize_speed": false,
+            "randomize_speed_offset": [
+                0,
+                0
+            ],
+            "randomize_vehicles": true,
+            "road_type": "road_merge",
+            "scenario_number": 0,
+            "taking_exit": 40,
+            "total_number_of_vehicles": 13
+        },
+
+        "merging_vehicle": {
+            "acc_max": 6,
+            "comfort_acc_max": 3,
+            "comfort_acc_min": -5,
+            "controlled_vehicle": false,
+            "delta": 4,
+            "distance_wanted": 0.5,
+            "enable_lane_change": false,
+            "id": -1,
+            "initial_position": [
+                90,
+                0
+            ],
+            "length": 5.0,
+            "max_speed": 35,
+            "min_speed": 5,
+            "random_offset_merging": [
+                0,
+                0
+            ],
+            "randomize": false,
+            "randomize_speed_merging": false,
+            "set_route": false,
+            "speed": 21,
+            "time_wanted": 0.5,
+            "vehicles_type": "highway_env.vehicle.behavior.CustomVehicle",
+            "width": 2.0
+        },
+
+        "observation": {
+            "absolute": false,
+            "action_history_count": 10,
+            "action_history_type": "binary",
+            "cooperative_perception": true,
+            "features": [
+                "presence",
+                "x",
+                "y",
+                "vx",
+                "vy",
+                "is_controlled"
+            ],
+            "mission_vehicle_observation": true,
+            "normalize": true,
+            "observation_config": {
+                "type": "Kinematics"
+            },
+            "order": "sorted_by_x",
+            "see_behind": false,
+            "type": "MultiAgentObservation",
+            "vehicles_count": 5
+        },
+
+        "cruising_vehicle": {
+            "acc_max": 6,
+            "comfort_acc_max": 4,
+            "comfort_acc_min": -12,
+            "delta": 4,
+            "distance_wanted": 0.51,
+            "enable_lane_change": false,
+            "length": 5.0,
+            "max_speed": 40,
+            "speed": 25,
+            "time_wanted": 0.5,
+            "vehicles_type": "highway_env.vehicle.behavior.CustomVehicle",
+            "width": 2.0
+        }
+}

@@ -1,0 +1,62 @@
+{
+  "info": "Exp_behavior DQN",
+  "base_config": "configs/experiments/Multienv/exp_base_multi.json",
+  "controlled_vehicles": 1,
+   "observation": {
+     "type": "OccupancyGrid",
+     "observation_config": {
+       "type": "OccupancyGrid",
+       "features": [
+         "presence",
+         "x",
+         "y",
+         "vx",
+         "vy",
+         "cos_h",
+         "sin_h"
+       ],
+       "features_range": {
+         "x": [
+           -100,
+           100
+         ],
+         "y": [
+           -100,
+           100
+         ],
+         "vx": [
+           -30,
+           30
+         ],
+         "vy": [
+           -30,
+           30
+         ]
+       },
+       "grid_size": [
+         [
+           -50,
+           50
+         ],
+         [
+          -50,
+           50
+         ]
+       ],
+       "grid_step": [
+         1,
+         1
+       ],
+       "absolute": false,
+       "normalize": true
+     }
+   },
+    "agent_config": {
+    "model": {
+      "type": "ConvNet3Layer"
+    }
+    },
+    "action": {
+    "type": "DiscreteMetaAction"
+  }
+}

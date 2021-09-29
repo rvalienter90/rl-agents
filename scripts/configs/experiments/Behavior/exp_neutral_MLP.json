@@ -1,0 +1,22 @@
+{
+  "info": "Exp_behavior MultiLayerPerceptron",
+  "base_config": "configs/experiments/Behavior/exp_behavior_MLP.json",
+  "cruising_vehicle": {
+    "acc_max": 6,
+    "comfort_acc_max": 3,
+    "comfort_acc_min": -6,
+    "distance_wanted": 5,
+    "time_wanted": 1.5,
+    "delta": 4,
+    "speed": 25,
+    "enable_lane_change": false,
+    "vehicles_type": "highway_env.vehicle.behavior.CustomVehicle",
+    "length": 5.0,
+    "width": 2.0,
+    "max_speed": 40,
+    "politeness": 0.5,
+    "lane_change_min_acc_gain": 0.2,
+    "lane_change_max_braking_imposed": 3.0
+  }
+
+}

@@ -1,0 +1,8 @@
+{
+    "info": "same as 300s with aggressive cruising vehicles",
+    "base_config": "configs/experiments/IEEE_Access/exp_base.json",
+
+    "merging_vehicle": {
+        "controlled_vehicle": true
+    }
+}

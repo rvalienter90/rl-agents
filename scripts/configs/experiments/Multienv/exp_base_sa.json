@@ -1,0 +1,13 @@
+{
+  "info": "Merging env",
+  "additional_folder_name": "exp_merge",
+  "base_config": "configs/experiments/Multienv/exp_base.json",
+
+  "controlled_vehicles": 1,
+  "observation": {
+    "type": "Kinematics"
+    },
+  "action": {
+    "type": "DiscreteMetaAction"
+  }
+}
