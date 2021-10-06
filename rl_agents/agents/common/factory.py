@@ -3,8 +3,10 @@ import importlib
 import json
 import logging
 import gym
-
+from pathlib import Path
 from rl_agents.configuration import Configurable
+def get_project_root() -> Path:
+    return Path(__file__).parent.parent.parent.parent
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +86,8 @@ def load_environment(env_config):
     #     with open(env_config) as f:
     #         env_config = json.loads(f.read())
     env_config = load_environment_config(env_config)
+    project_root = get_project_root()
+    env_config['project_root'] = str(project_root)
     # Make the environment
     if env_config.get("import_module", None):
         __import__(env_config["import_module"])

@@ -1,5 +1,10 @@
 import json
-
+import numpy as np
+from pathlib import Path
+import os
+def get_project_root() -> Path:
+    return Path(__file__).parent.parent
+root_folder = get_project_root()
 data = {
     "info": "",
     "additional_folder_name": "",
@@ -49,8 +54,112 @@ complex_100 = False
 Behavior_100s = False
 behavior_400s_sensitivity = False
 behavior_500s_sensitivity = False
-behavior_900s_sensitivity = True
-import numpy as np
+behavior_900s_sensitivity = False
+generalization_100s = False
+generalization_120s = False
+generalization_200s = False
+generalization_250s = False
+generalization_300s = True
+if generalization_100s:
+    ini_folder = os.path.join(root_folder,'configs/experiments/Multienv/')
+
+    base_name_json = "exp_generalization_"
+    base_config_folder = "configs/experiments/Multienv/"
+    # start_num = 400
+    start_num = 100
+    for base_config in ["exp_base_multi_sa_latent.json", "exp_multi_Grid_DQN_sa_latent.json","exp_base_multi_Image_sa_latent.json"]:
+        # for base_config in ["exp_agressive_DQN.json","exp_neutral_DQN.json","exp_conservative_DQN.json"]:
+
+        data["base_config"] = base_config_folder + base_config
+        for latent_dimention in [16,32,64]:
+            data['latent_dimention']=latent_dimention
+
+            name = ini_folder + base_name_json + str(start_num) + '.json'
+            start_num += 1
+            with open(name, 'w') as outfile:
+                json.dump(data, outfile)
+
+
+if generalization_120s:
+    ini_folder = os.path.join(root_folder,'configs/experiments/Multienv/')
+
+    base_name_json = "exp_generalization_"
+    base_config_folder = "configs/experiments/Multienv/"
+    # start_num = 400
+    start_num = 120
+    for base_config in ["exp_base_multi_sa.json", "exp_multi_Grid_DQN_sa.json","exp_base_multi_Image_sa.json"]:
+        # for base_config in ["exp_agressive_DQN.json","exp_neutral_DQN.json","exp_conservative_DQN.json"]:
+
+        data["base_config"] = base_config_folder + base_config
+        name = ini_folder + base_name_json + str(start_num) + '.json'
+        start_num += 1
+        with open(name, 'w') as outfile:
+            json.dump(data, outfile)
+
+
+if generalization_200s:
+    ini_folder = os.path.join(root_folder,'configs/experiments/Multienv/')
+
+    base_name_json = "exp_generalization_"
+    base_config_folder = "configs/experiments/Multienv/"
+    # start_num = 400
+    start_num = 200
+    for scenario in ["intersection", "roundabout","road_merge","road_exit"]:
+        for base_config in ["exp_base_multi_sa_latent.json", "exp_multi_Grid_DQN_sa_latent.json","exp_base_multi_Image_sa_latent.json"]:
+            # for base_config in ["exp_agressive_DQN.json","exp_neutral_DQN.json","exp_conservative_DQN.json"]:
+            data['scenario']['road_types']=[scenario]
+
+            data["base_config"] = base_config_folder + base_config
+            for latent_dimention in [16,32,64]:
+                data['latent_dimention']=latent_dimention
+
+                name = ini_folder + base_name_json + str(start_num) + '.json'
+                start_num += 1
+                with open(name, 'w') as outfile:
+                    json.dump(data, outfile)
+
+if generalization_250s:
+    ini_folder = os.path.join(root_folder,'configs/experiments/Multienv/')
+
+    base_name_json = "exp_generalization_"
+    base_config_folder = "configs/experiments/Multienv/"
+    start_num = 250
+    for scenario in ["intersection", "roundabout","road_merge","road_exit"]:
+        for base_config in ["exp_base_multi_sa.json", "exp_multi_Grid_DQN_sa.json","exp_base_multi_Image_sa.json"]:
+            # for base_config in ["exp_agressive_DQN.json","exp_neutral_DQN.json","exp_conservative_DQN.json"]:
+            data['scenario']['road_types']=[scenario]
+
+            data["base_config"] = base_config_folder + base_config
+
+            name = ini_folder + base_name_json + str(start_num) + '.json'
+            start_num += 1
+            with open(name, 'w') as outfile:
+                json.dump(data, outfile)
+
+if generalization_300s:
+    ini_folder = os.path.join(root_folder,'configs/experiments/Multienv/')
+
+    base_name_json = "exp_generalization_"
+    base_config_folder = "configs/experiments/Multienv/"
+    start_num = 350
+    allenv = ["intersection", "roundabout","road_merge","road_exit"]
+
+    for base_config in ["exp_generalization_120.json", "exp_generalization_250.json","exp_generalization_253.json","exp_generalization_256.json","exp_generalization_259.json"]:
+
+    # for base_config in ["exp_generalization_100.json", "exp_generalization_200.json","exp_generalization_209.json","exp_generalization_218.json","exp_generalization_227.json"]:
+        for scenario in ["intersection", "roundabout", "road_merge", "road_exit", allenv]:
+            # for base_config in ["exp_agressive_DQN.json","exp_neutral_DQN.json","exp_conservative_DQN.json"]:
+            if isinstance(scenario,list):
+                data['scenario']['road_types'] = scenario
+            else:
+                data['scenario']['road_types']=[scenario]
+
+            data["base_config"] = base_config_folder + base_config
+
+            name = ini_folder + base_name_json + str(start_num) + '.json'
+            start_num += 1
+            with open(name, 'w') as outfile:
+                json.dump(data, outfile)
 
 if behavior_400s_sensitivity:
     base_config_folder = "configs/experiments/Behavior/"

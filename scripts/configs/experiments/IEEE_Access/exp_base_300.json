@@ -1,5 +1,0 @@
-{
-    "info": "exp_base + initial values from results from 100s + rewards config from 200s",
-    "base_config": "configs/experiments/IEEE_Access/exp_base.json"
-
-}

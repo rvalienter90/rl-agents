@@ -11,10 +11,15 @@ import pandas as pd
 
 
 def main():
+    # plots_output_path = os.path.join("..", "..", "scripts", "rl_agents_scripts", "plots", "Behavior")
     plots_output_path = os.path.join("..", "..", "scripts", "out", "plots")
     # rodo
-    base_path = os.path.join("D:/Rodolfo/Data/Behavior/simulations")
-    folder_path = "trainned_neutral_200s"
+    # base_path = os.path.join("D:/Rodolfo/Data/Behavior/simulations/")
+    base_path = os.path.join("D:/Rodolfo/Data/Generalization")
+    folder_path = "simple_complex"
+    # base_path = "D:/"
+    # folder_path = "outtest"
+
     add_to_tensorboard_folders = []
     # add_to_tensorboard_folders.append("1100s/train")
     # modes = ['plt_folder_stats_episode','plt_folder_stats' , 'plt_folder_stats_train']
@@ -25,23 +30,24 @@ def main():
     '''
     This goes over all folders in path and adds mission related calculations to TensorBoard
     '''
-    if "add_to_tensorboard" in modes:
-        for folder in add_to_tensorboard_folders:
-            add_to_tensorboard_path = os.path.join(base_path, folder)
-            apps.add_mission_calc_to_tensorboard(add_to_tensorboard_path)
+    # if "add_to_tensorboard" in modes:
+    #     for folder in add_to_tensorboard_folders:
+    #         add_to_tensorboard_path = os.path.join(base_path, folder)
+    #         apps.add_mission_calc_to_tensorboard(add_to_tensorboard_path)
 
     #######################################################################
     '''
        These are folder summary plots
        '''
     if "plt_folder_stats" in modes:
+        compute_gain = [450,461]
         # simulation_path_base = os.path.join(base_path, folder_path, "train")
-        # pltfolder(simulation_path_base, plots_output_path_base=plots_output_path, plt_name=folder_path + "_train",
-        #           n=3000)
-        # try:
+        # pltfolder(simulation_path_base, plots_output_path_base=plots_output_path, plt_name=folder_path + "_t",
+        #           n=1000,episode_duration=14, compute_gain=False, train=True)
+        # # try:
         simulation_path_base = os.path.join(base_path, folder_path, "test")
         pltfolder(simulation_path_base, plots_output_path_base=plots_output_path, plt_name=folder_path + "_test",
-                  n=900)
+                  n=800,episode_duration=14, compute_gain=False, train=False)
         # except:
         #     print("**********************No test***************************")
     if "plt_folder_stats_episode" in modes:
@@ -60,8 +66,10 @@ def main():
         plt_train(simulation_path_base, plots_output_path_base=plots_output_path, plt_name=plt_name, span=1000)
 
 
-def pltfolder(simulation_path_base, plots_output_path_base=None, plt_name=None, n=900, absolute=True):
-    overall_stats = apps.get_overall_stats(simulation_path_base, n)
+
+
+def pltfolder(simulation_path_base, plots_output_path_base=None, plt_name=None, n=900, absolute=True,episode_duration=16, compute_gain=None,train=True):
+    overall_stats = apps.get_overall_stats(simulation_path_base, n,episode_duration=episode_duration )
 
     plots_output_path = os.path.join(plots_output_path_base, plt_name)
     try:
@@ -71,9 +79,37 @@ def pltfolder(simulation_path_base, plots_output_path_base=None, plt_name=None, 
             os.mkdir(plots_output_path)
     except OSError:
         pass
+    if compute_gain:
+        metrics = ["total_not_mission", "total_crash", "average_distance_travelled"]
+        exp_dict = apps.get_experiments(overall_stats,metrics=metrics, train = train,n=n)
+        actruistic_gains = []
+
+        x_ticks_labels = []
+        for i in range(compute_gain[0],compute_gain[1],2):
+            altruistic =  np.array(exp_dict[str(i)])
+            egositic = np.array(exp_dict[str(i+1)])
+            actruistic_gain = altruistic - egositic
+            actruistic_gains.append(actruistic_gain)
+            x_ticks_labels.append(str(i))
+        # actruistic_gains.append(actruistic_gain)
+
+
+        x_ticks_labels.append(str(i+1))
+        x_ticks = [i+1 for i in range(0, len(x_ticks_labels))]
+        actruistic_gains = np.array(actruistic_gains).T
+        colors = [np.random.rand(3, ) for p in range(0, len(metrics))]
+        fig = vutils.plot_time_array(actruistic_gains, ini=1, end=None, x=None, y_label="gain", x_label="behaviors_cases",
+                                     title=" gain vs behaviors ",
+                                     y_limit=None, x_limit=None, colors=colors, show=False, legend=metrics,
+                                     data_std=None,x_ticks_labels=x_ticks_labels,x_ticks=x_ticks)
+
+        out_file = plt_name + "gain"
+        fig_out_path = os.path.join(plots_output_path, out_file)
+        fig.savefig(fig_out_path + ".png", dpi=300)
+
 
     apps.compare_folder(overall_stats, metrics=["total_not_mission", "total_crash", "average_distance_travelled"],
-                        plots_output_path=plots_output_path,n=n, absolute=absolute)
+                        plots_output_path=plots_output_path,n=n)
 
 
 def plt_train(simulation_path_base, plots_output_path_base=None, plt_name=None, span=1000, show=False):
@@ -112,7 +148,8 @@ def plt_train(simulation_path_base, plots_output_path_base=None, plt_name=None, 
     for subfolder in subfolders:
         # distance_v1v2 = np.sqrt(np.square((time_step_logs_array[0][0,:] - time_step_logs_array[0][1, :])) + np.square((time_step_logs_array[1][0, :] - time_step_logs_array[1][1, :])))
         # distances.append(distance_v1v2)
-        legends.append(subfolder.split("_")[-1])
+        # legends.append(subfolder.split("_")[-1])
+        legends.append(subfolder)
 
     colors = [np.random.rand(3, ) for p in range(0, len(subfolders))]
     fig = vutils.plot_time_array(rewards_data_array, ini=1, end=None, x=None, y_label="reward", x_label="episodes",

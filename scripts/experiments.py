@@ -38,10 +38,27 @@ import json
 from docopt import docopt
 from itertools import product
 from multiprocessing.pool import Pool
+import sys
+
+def get_project_root() -> Path:
+    return Path(__file__).parent.parent.parent
+project_root = get_project_root()
+# rlagentsvar= os.path.join(str(project_root),'rl-agents','rl_agents')
+rlagentsvar = '/home/rvalienteromero/Coop/coop_repo_multi/rl-agents/'
+print(rlagentsvar)
+sys.path.append(rlagentsvar)
+# highwayenvvar= os.path.join(str(project_root),'highway-env','highway_env')
+highwayenvvar = '/home/rvalienteromero/Coop/coop_repo_multi/highway-env/'
+print(highwayenvvar)
+sys.path.append(highwayenvvar)
 
 from rl_agents.trainer import logger
 from rl_agents.trainer.evaluation import Evaluation
 from rl_agents.agents.common.factory import load_agent, load_environment
+
+
+
+
 
 BENCHMARK_FILE = 'benchmark_summary'
 LOGGING_CONFIG = 'configs/logging.json'
@@ -87,6 +104,8 @@ def evaluate(environment_config, agent_config, options):
     if options['--offscreen_rendering']:
         env.config['offscreen_rendering'] = True
 
+
+
     evaluation_train = Evaluation(env,
                                   agent,
                                   run_directory=run_directory,
@@ -124,7 +143,7 @@ def evaluate(environment_config, agent_config, options):
 
         evaluation_test.test()
 
-    return os.path.relpath(evaluation_train.monitor.directory)
+    # return os.path.relpath(evaluation_train.monitor.directory)
 
 
 def benchmark(options):

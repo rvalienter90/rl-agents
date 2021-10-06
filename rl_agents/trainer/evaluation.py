@@ -185,8 +185,9 @@ class Evaluation(object):
             self.episode_start_time = time.time()
             self.env.episode = self.episode
 
-            if (self.num_episodes - self.episode) < 50:
+            if (self.num_episodes - self.episode) < 55:
                 # self.create_timestep_log = True
+                self.create_timestep_log = True
                 self.monitor.options['--video_save_freq'] = 1
 
             # Run episode
@@ -220,7 +221,8 @@ class Evaluation(object):
                     pass
 
             # End of episode
-            self.save_dataset(info)
+            if self.env.config['save_dataset']:
+                self.save_dataset(info)
             duration = time.time() - start_time
             self.after_all_episodes(self.episode, self.rewards, duration)
             self.after_some_episodes(self.episode, self.rewards)

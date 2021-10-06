@@ -1,7 +1,7 @@
 import logging
 import torch
 from gym import spaces
-
+import numpy as np
 from rl_agents.agents.common.memory import Transition
 from rl_agents.agents.common.models import model_factory, size_model_config, trainable_parameters
 from rl_agents.agents.common.optimizers import loss_function_factory, optimizer_factory
@@ -41,13 +41,34 @@ class DQNAgent(AbstractDQNAgent):
         # Compute concatenate the batch elements
         if not isinstance(batch.state, torch.Tensor):
             # logger.info("Casting the batch to torch.tensor")
-            state = torch.cat(tuple(torch.tensor([batch.state], dtype=torch.float))).to(self.device)
-            action = torch.tensor(batch.action, dtype=torch.long).to(self.device)
-            reward = torch.tensor(batch.reward, dtype=torch.float).to(self.device)
-            next_state = torch.cat(tuple(torch.tensor([batch.next_state], dtype=torch.float))).to(self.device)
-            terminal = torch.tensor(batch.terminal, dtype=torch.bool).to(self.device)
-            batch = Transition(state, action, reward, next_state, terminal, batch.info)
+            # state = torch.cat(tuple(torch.tensor([batch.state], dtype=torch.float))).to(self.device)
+            # action = torch.tensor(batch.action, dtype=torch.long).to(self.device)
+            # reward = torch.tensor(batch.reward, dtype=torch.float).to(self.device)
+            # next_state = torch.cat(tuple(torch.tensor([batch.next_state], dtype=torch.float))).to(self.device)
+            # terminal = torch.tensor(batch.terminal, dtype=torch.bool).to(self.device)
+            # batch = Transition(state, action, reward, next_state, terminal, batch.info)
+            # logger.info("Casting the batch to torch.tensor")
+            # np.array speeds up,
+            state = torch.cat(tuple(torch.tensor(np.array([batch.state]), dtype=torch.float))).to(self.device)
+            # print ("point1 diff = {:.3f} ms".format((time.time()-start)*1000))
+            action = torch.tensor(np.array(batch.action), dtype=torch.long).to(self.device)
+            # print("point2 diff = {:.3f} ms".format((time.time() - start) * 1000))
+            reward = torch.tensor(np.array(batch.reward), dtype=torch.float).to(self.device)
+            # print("point3 diff = {:.3f} ms".format((time.time() - start) * 1000))
+            next_state = torch.cat(tuple(torch.tensor(np.array([batch.next_state]), dtype=torch.float))).to(self.device)
+            # print("point4 diff = {:.3f} ms".format((time.time() - start) * 1000))
+            # #TODO :test wihtout converting to int
+            # if self.env.config["observation"]["observation_config"]["type"] == "HeatmapObservation":
+            #     scale = 255.0
+            #     state = torch.div(state, scale)
+            #     # print("point4.1 diff = {:.3f} ms".format((time.time() - start) * 1000))
+            #     next_state = torch.div(next_state, scale)
 
+            # print("point5 diff = {:.3f} ms".format((time.time() - start) * 1000))
+            terminal = torch.tensor(np.array(batch.terminal), dtype=torch.bool).to(self.device)
+            # print("point6 diff = {:.3f} ms".format((time.time() - start) * 1000))
+            batch = Transition(state, action, reward, next_state, terminal, batch.info)
+            # print("point7 diff = {:.3f} ms".format((time.time() - start) * 1000))
         # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
         # columns of actions taken
         state_action_values = self.value_net(batch.state)
@@ -73,11 +94,15 @@ class DQNAgent(AbstractDQNAgent):
         return loss, target_state_action_value, batch
 
     def get_batch_state_values(self, states):
-        values, actions = self.value_net(torch.tensor(states, dtype=torch.float).to(self.device)).max(1)
+        # values, actions = self.value_net(torch.tensor(states, dtype=torch.float).to(self.device)).max(1)
+        values, actions = self.value_net(torch.tensor(np.array(states), dtype=torch.float).to(self.device)).max(1)
+
         return values.data.cpu().numpy(), actions.data.cpu().numpy()
 
     def get_batch_state_action_values(self, states):
-        return self.value_net(torch.tensor(states, dtype=torch.float).to(self.device)).data.cpu().numpy()
+        # return self.value_net(torch.tensor(states, dtype=torch.float).to(self.device)).data.cpu().numpy()
+        val = self.value_net(torch.tensor(np.array(states), dtype=torch.float).to(self.device)).data.cpu().numpy()
+        return val
 
     def save(self, filename):
         state = {'state_dict': self.value_net.state_dict(),

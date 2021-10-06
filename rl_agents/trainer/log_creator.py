@@ -199,9 +199,9 @@ class LogCreator():
                     self.create_timestep_log_folder(episode, vehicle_id)
 
                     vehicle_timestep_reward = 0
-                    if vehicle_id in info_at_timestep['reward_ids']:
-                        j = np.where(np.array(info_at_timestep['reward_ids']) == vehicle_id)[0][0]
-                        vehicle_timestep_reward = rewards_at_timestep[j]
+                    # if vehicle_id in info_at_timestep['reward_ids']:
+                    #     j = np.where(np.array(info_at_timestep['reward_ids']) == vehicle_id)[0][0]
+                    #     vehicle_timestep_reward = rewards_at_timestep[j]
 
                     individual_timestep_log = {
                         'timestep': timestep,
@@ -215,10 +215,10 @@ class LogCreator():
                     individual_timestep_log_name = self.get_logfile_name('timestep', episode=episode,
                                                                          vehicle_id=vehicle_id, timestep=timestep)
                     with open(individual_timestep_log_name, 'a') as csvfile:
-                        if vehicle_id in info_at_timestep['reward_ids']:
-                            # writer = csv.DictWriter(csvfile, fieldnames=self.TIMESTEP_FIELD_NAMES_CONTROLLED)
-                            j = info_at_timestep['reward_ids'].index(vehicle_id)
-                            individual_timestep_log.update(info_at_timestep["reward_info"][j])
+                        # if vehicle_id in info_at_timestep['reward_ids']:
+                        #     # writer = csv.DictWriter(csvfile, fieldnames=self.TIMESTEP_FIELD_NAMES_CONTROLLED)
+                        #     j = info_at_timestep['reward_ids'].index(vehicle_id)
+                        #     individual_timestep_log.update(info_at_timestep["reward_info"][j])
 
                         if len(episode_info[0]["vehicle_info_debug"]) > 0:
                             individual_timestep_log.update(info_at_timestep["vehicle_info_debug"][i])

@@ -7,7 +7,43 @@ import post_process.visualization.visualization_utils as vutils
 from post_process.calculations.mission_calcs import MissionCalcs
 from post_process.calculations.overall_stat import OverallStat
 from matplotlib import pyplot as plt
+# importing library
+import csv
 
+BLACK = "#000000"
+
+DARK_ORANGE = "#ff8c00"
+VIVID_ORANGE = "#FF5E0E"
+RED_ORANFE = "#FF4500"
+LIGHT_ORANGE = "#ffa500"
+VERY_LIGHT_ORANGE = "#ffddb3"
+
+DARK_GRAY = "#595959"
+MEDIUM_GRAY = "#999999"
+LIGHT_GRAY = "#b9b9b9"
+VERY_LIGHT_GRAY = "#cecece"
+VERY_VERY_LIGHT_GRAY = "#eaeaea"
+
+DARK_BLUE = "#42838f"
+LIGHT_BLUE = "#aaccff"
+
+DARK_NEON_BLUE = "#0066ff"
+NEON_BLUE = "#00ccff"
+
+DARK_GREEN = "#006400"
+LIGHT_GREEN = "#90EE90"
+
+LIGHT_GREEN_BLUE = "#87decd"
+
+# DARK_GREEN_V2 = "#4b742f"
+# DARK_GREEN_V2 = "#548235"
+DARK_GREEN_V2 = "#658f49"
+LIGHT_GREEN_V2 = "#a9c09a"
+
+PURPLE = "#9900cc"
+
+SLAC = "#947F73"
+LILAC = "#7E7193"
 
 def add_mission_calc_to_tensorboard(path):
     # this function adds not_mission info to Tensorboard for all simulations in path
@@ -23,12 +59,12 @@ def add_mission_calc_to_tensorboard(path):
         mission_calcs.add_to_tensorboard()
         # mission_calcs.debug_plot_results()
 
-
-def get_overall_stats(path, n=None, single=False , subfolders = None):
+def get_overall_stats(path, n=None, single=False , subfolders = None,episode_duration =16):
     # this function compares all the runs in path by averaging them over the last n episodes
     if subfolders is None:
         if single:
-           subfolders = [path]
+           subfolders = [os.path.split(path)[1]]
+           path = os.path.split(path)[0]
         else:
 
            subfolders = cutils.get_subfolders(path)
@@ -46,7 +82,11 @@ def get_overall_stats(path, n=None, single=False , subfolders = None):
                      "crash_episodes": [],
                      "crash_episodes_flag_all": [],
                      "average_distance_travelled": [],
+                     "average_distance_travelled_human": [],
+                     "average_distance_travelled_controlled": [],
                      "average_distance_travelled_stat": [],
+                     "average_distance_travelled_human_stat": [],
+                     "average_distance_travelled_controlled_stat": [],
                      "average_episode_reward_stat": [],
                      "not_mission_episodes_flag_all": []
                      }
@@ -56,11 +96,11 @@ def get_overall_stats(path, n=None, single=False , subfolders = None):
             continue
         print("running get_overall_stats for subfolder = ", subfolder)
         if single:
-            full_path = path
+            full_path =os.path.join(path, subfolder)
         else:
             full_path = os.path.join(path, subfolder)
 
-        overall_stat = OverallStat(path, subfolder, n)
+        overall_stat = OverallStat(path, subfolder, n,episode_duration=episode_duration)
         overall_stat.get_overall_stat()
 
         overall_stats["paths"].append(full_path)
@@ -86,15 +126,22 @@ def get_overall_stats(path, n=None, single=False , subfolders = None):
             append(overall_stat.crash_episodes_flag_all)
         overall_stats["average_distance_travelled"]. \
             append(overall_stat.average_speed_all * overall_stat.average_episode_length)
+        overall_stats["average_distance_travelled_human"]. \
+            append(overall_stat.average_speed_human * overall_stat.average_episode_length)
+        overall_stats["average_distance_travelled_controlled"]. \
+            append(overall_stat.average_speed_controlled * overall_stat.average_episode_length)
         overall_stats["average_distance_travelled_stat"]. \
             append(overall_stat.average_distance_travelled_stat)
+        overall_stats["average_distance_travelled_controlled_stat"]. \
+            append(overall_stat.average_distance_travelled_controlled_stat)
+        overall_stats["average_distance_travelled_human_stat"]. \
+            append(overall_stat.average_distance_travelled_human_stat)
         overall_stats["average_episode_reward_stat"]. \
             append(overall_stat.average_episode_reward_stat)
         overall_stats["not_mission_episodes_flag_all"]. \
                 append(overall_stat.not_mission_episodes_flag_all)
 
     return overall_stats
-
 
 def compare_stats_action_hist(stats, metrics=None, x_name=None, location_x=None, y_name=None, location_y=None,
                               plots=None, location_plot=None, base_dict=None, fig_out_path=None):
@@ -189,7 +236,6 @@ def compare_stats_action_hist(stats, metrics=None, x_name=None, location_x=None,
             fig_out_path_final = fig_out_path + "_" + z_name + "_subplots_" + plots
             fig.savefig(fig_out_path_final + ".png", dpi=300)
     print("end")
-
 
 def compare_stats_obs_features(stats, metrics=None, x_name=None, location_x=None, y_name=None, location_y=None,
                                plots=None, location_plot=None, base_dict=None, fig_out_path=None):
@@ -300,7 +346,6 @@ def compare_stats_obs_features(stats, metrics=None, x_name=None, location_x=None
             fig_out_path_final = fig_out_path + "_" + z_name + "_subplots_" + plots
             fig.savefig(fig_out_path_final + ".png", dpi=300)
     print("end")
-
 
 def compare_stats(stats, metrics=None, x_name=None, location_x=None, y_name=None, location_y=None, plots=None,
                   location_plot=None, base_dict=None, fig_out_path=None, condition_value=None, condition_name=None):
@@ -424,7 +469,6 @@ def compare_stats(stats, metrics=None, x_name=None, location_x=None, y_name=None
             fig.savefig(fig_out_path_final + ".png", dpi=300)
     print("end")
 
-
 def append_from_json(stats):
     '''
     [in] stats: this should be created overall_stats = get_overall_stats(path, 2000)
@@ -455,12 +499,35 @@ def add_total_distance_travelled(stats):
 
     return stats
 
+# output {'exp_number': [metric1_val, metric2_val,...] ; ....}
+def get_experiments(stats, metrics=None, train = True,n=900,max_distance= 400):
+    exp_dict= {}
+    exp_dict["metrics"] = metrics
+    for i, path in enumerate(stats["paths"]):
+        if train:
+            exp = path.split("_")[-1]
+        else:
+            exp = path.split("_")[-1]
+            exp = exp.split("-")[0]
+        metric_vals = []
+        for metric in metrics:
+            if metric !="average_distance_travelled":
+                val = stats[metric][i]/n*100
+            else:
+                # val = stats[metric][i] / max_distance * 100
+                val = stats[metric][i]
+            metric_vals.append(val)
+        exp_dict[exp] = metric_vals
 
-
-def compare_folder(stats, metrics=None, plots_output_path=None, n=900, absolute=True):
+    return exp_dict
+def compare_folder(stats, metrics=None, plots_output_path=None, n=900,persentage=True, set_limit=True):
     figsize = [10, 6]
     # plt.rcdefaults()
-
+    if persentage:
+        x_limit = 100
+    else:
+        x_limit =n
+    header = ['Name', 'metric']
     for z_name in metrics:
         # metric = []
 
@@ -469,6 +536,14 @@ def compare_folder(stats, metrics=None, plots_output_path=None, n=900, absolute=
         paths = []
         for i, value in enumerate(stats[z_name]):
             # metric.append(value)
+
+            if persentage:
+                # value =value/n*100
+                if z_name != "average_distance_travelled":
+                    value = float(value)/n*100
+
+                else:
+                    value = float(value)/400*100
 
             all_stats_non_aggressive.append(value)
             # legend_name = "plt_" + stats["paths"][i].split("_")[-1]
@@ -507,9 +582,8 @@ def compare_folder(stats, metrics=None, plots_output_path=None, n=900, absolute=
 
         for i, v in enumerate(all_stats_non_aggressive):
             ax.text(v + 3, i + .25, str(v), color='blue', fontweight='bold')
-
-        if absolute:
-            ax.set_xlim(0,n)
+        if set_limit:
+            ax.set_xlim(0, x_limit)
         ax.set_yticks(y_pos)
         ax.set_yticklabels(order)
         ax.invert_yaxis()  # labels read top-to-bottom
@@ -520,11 +594,26 @@ def compare_folder(stats, metrics=None, plots_output_path=None, n=900, absolute=
         plt.subplots_adjust(left=0.3, bottom=0.1, right=0.95, top=0.9)
 
         # plt.margins(0.9)
+
+
         out_file = plt_name + "_" + z_name
         fig_out_path = os.path.join(plots_output_path, out_file)
+
+        data = [legend_non_aggressive, all_stats_non_aggressive]
+        datat = np.array(data).T
+        # datat_2d_t = np.array(data).T.tolist()
+        datat_2d_t = np.array(datat).tolist()
+        with open(fig_out_path + '.csv', 'w') as f:
+            writer = csv.writer(f)
+            writer.writerow(['Name', 'metric'])
+            writer.writerows(datat)
+
+        # file = open(fig_out_path + '.csv', 'w', newline='')
+        # writer = csv.DictWriter(file, fieldnames=header)
+        # writer.writeheader()
+
         fig.savefig(fig_out_path + ".png", dpi=300)
         # plt.show()
-
 
 def compare_behavior(stats, metrics=None, plots_output_path=None, condition_name=None, condition_value=None):
     figsize = [10, 6]
@@ -661,3 +750,30 @@ def compare_behavior(stats, metrics=None, plots_output_path=None, condition_name
             fig_out_path = os.path.join(plots_output_path, out_file)
             fig.savefig(fig_out_path + ".png", dpi=300)
         # plt.show()
+
+def avg_every_n_episodes(simulation_path_base, n=20, span=100, std=True, span_std=20, subfolders=None,
+                         metric="crash_episodes_flag_all"):
+    overall_stats = get_overall_stats(simulation_path_base, subfolders=subfolders)
+    overall_stats = append_from_json(overall_stats)
+    avg_crashes = []
+    lens = []
+    for idx, crashes in enumerate(overall_stats["crash_episodes_flag_all"]):
+        avg_crash = cutils.average_binary_array(crashes, n)
+        avg_crashes.append(avg_crash)
+        lens.append(len(avg_crash))
+        pathx = overall_stats["paths"][idx]
+    l = min(lens)
+
+    avg_crashes_filter = [avg_crash_filter[0:l - 1] for avg_crash_filter in avg_crashes]
+    alpha = 2 / (span + 1)
+    avg_crashes_filter_std = [np.std(cutils.rolling_window(np.array(data), span_std), 1) for data in avg_crashes_filter]
+    avg_crashes_filter_ema = [cutils.ewma_vectorized_safe(data, alpha) for data in avg_crashes_filter]
+    avg_crashes_np = np.array(avg_crashes_filter_ema)
+    if std:
+        avg_crashes_filter_std_zeros = np.zeros((np.shape(avg_crashes_filter_ema)))
+        avg_crashes_filter_std_zeros[:, span_std - 1:] = avg_crashes_filter_std
+
+    if std:
+        return avg_crashes_np, np.array(avg_crashes_filter_std_zeros)
+    else:
+        return avg_crashes_np

@@ -1,1 +1,0 @@
-{"info": "exp_merge_500 similar to 500_Base with collision_reward= -3 and successful_merging_reward= 3 and high_speed_reward= 1 and cooperative_reward= 0.5", "additional_folder_name": "exp_merge_500", "base_config": "configs/experiments/exp_merge_500_base.json", "reward": {"collision_reward": -3, "successful_merging_reward": 3, "high_speed_reward": 1, "cooperative_reward": 0.5}}

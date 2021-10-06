@@ -4,17 +4,17 @@
   "import_module": "highway_env",
   "agent_config": {
     "__class__": "<class 'rl_agents.agents.deep_q_network.pytorch.DQNAgent'>",
-    "gamma": 0.95,
+    "gamma": 1,
     "n_steps": 1,
-    "batch_size": 32,
+    "batch_size": 128,
     "batch_counter_wait": 20,
     "memory_capacity": 10000,
     "target_update": 200,
     "double": false,
     "calculate_replay_size": false,
     "exploration": {
-      "method": "EpsilonGreedyLinear",
-      "tau": 20000,
+      "method": "EpsilonGreedy",
+      "tau": 10000,
       "temperature": 1.0,
       "final_temperature": 0.1,
       "auto_tau": false
@@ -41,7 +41,7 @@
         "action_history_type": "binary",
         "action_history_count": 10,
         "absolute": false,
-        "order": "sorted_by_x",
+        "order": "sorted",
         "see_behind": false,
         "normalize": true,
         "mission_vehicle_observation": true,
@@ -138,9 +138,11 @@
     "intersection": {
       "destination": "o1",
       "spawn_probability": 0.6
-  }
   },
-
+    "complex": false,
+    "simple": false
+  },
+  "save_dataset": false,
   "baseline_vehicle": {
       "acc_max": 6,
       "comfort_acc_max": 2,
@@ -201,7 +203,7 @@
       0
     ],
     "random_offset_merging": [
-      3,
+      -3,
       3
     ],
     "randomize_speed_merging": true,
@@ -242,7 +244,7 @@
     "min_speed": 10,
     "randomize": true,
     "random_offset_exit": [
-     1,
+     -1,
      1
     ]
   },

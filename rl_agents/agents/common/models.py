@@ -239,20 +239,20 @@ class ConvNet3Layer(nn.Module, Configurable):
         super().__init__()
         Configurable.__init__(self, config)
         self.activation = activation_factory(self.config["activation"])
-        self.conv1 = nn.Conv2d(self.config["in_channels"], 16, kernel_size=2, stride=2)
-        self.conv2 = nn.Conv2d(16, 32, kernel_size=2, stride=2)
-        self.conv3 = nn.Conv2d(32, 64, kernel_size=2, stride=2)
+        self.conv1 = nn.Conv2d(self.config["in_channels"], 16, kernel_size=3, stride=1)
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=3, stride=1)
+        self.conv3 = nn.Conv2d(32, 32, kernel_size=3, stride=2)
 
         # MLP Head
         # Number of Linear input connections depends on output of conv2d layers
         # and therefore the input image size, so compute it.
-        def conv2d_size_out(size, kernel_size=2, stride=2):
+        def conv2d_size_out(size, kernel_size=3, stride=1):
             return (size - (kernel_size - 1) - 1) // stride + 1
 
-        convw = conv2d_size_out(conv2d_size_out(conv2d_size_out(self.config["in_width"])))
-        convh = conv2d_size_out(conv2d_size_out(conv2d_size_out(self.config["in_height"])))
+        convw = conv2d_size_out(conv2d_size_out(conv2d_size_out(self.config["in_width"])),stride=2)
+        convh = conv2d_size_out(conv2d_size_out(conv2d_size_out(self.config["in_height"])),stride=2)
         assert convh > 0 and convw > 0
-        self.config["head_mlp"]["in"] = convw * convh * 64
+        self.config["head_mlp"]["in"] = convw * convh * 32
         self.config["head_mlp"]["out"] = self.config["out"]
         self.head = model_factory(self.config["head_mlp"])
 

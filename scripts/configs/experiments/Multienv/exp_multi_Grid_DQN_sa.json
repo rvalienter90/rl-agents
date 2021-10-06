@@ -4,52 +4,30 @@
   "controlled_vehicles": 1,
    "observation": {
      "type": "OccupancyGrid",
-     "observation_config": {
-       "type": "OccupancyGrid",
+     "type": "OccupancyGrid",
        "features": [
          "presence",
-         "x",
-         "y",
          "vx",
          "vy",
          "cos_h",
          "sin_h"
        ],
-       "features_range": {
-         "x": [
-           -100,
-           100
-         ],
-         "y": [
-           -100,
-           100
-         ],
-         "vx": [
-           -30,
-           30
-         ],
-         "vy": [
-           -30,
-           30
-         ]
-       },
        "grid_size": [
          [
-           -50,
+           -20,
            50
          ],
          [
-          -50,
+          -20,
            50
          ]
        ],
        "grid_step": [
-         1,
-         1
+         3,
+         3
        ],
        "absolute": false,
        "normalize": true
-     }
    },
     "agent_config": {
     "model": {

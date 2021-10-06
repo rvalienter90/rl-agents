@@ -1,1 +1,0 @@
-{"info": "exp_merge_102 similar to IEEE_Access/exp_baseinitial_position= 90 and random_offset_merging= 5 and speed= 23", "additional_folder_name": "exp_merge_102", "base_config": "configs/experiments/IEEE_Access/exp_base.json", "reward": {}, "merging_vehicle": {"initial_position": [90, 0], "random_offset_merging": [-5, 5], "speed": 23}, "tracker_logging": true}
