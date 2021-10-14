@@ -140,7 +140,7 @@
       "spawn_probability": 0.6
   },
     "complex": false,
-    "simple": false
+    "simple": true
   },
   "save_dataset": false,
   "baseline_vehicle": {

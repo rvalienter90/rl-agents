@@ -1,6 +1,6 @@
 from tensorflow.keras.datasets import mnist
 
-from Autoencoder.autoencoder import Autoencoder,DeepAutoencoder
+from autoencoder import Autoencoder,DeepAutoencoder
 import pickle
 import os, fnmatch
 import numpy as np
@@ -137,7 +137,6 @@ def load_dataset_Grid(pathbase="D:\Rodolfo\States\Dataset\Grid", samples= None):
                     continue
                 state = d['state']
                 # state = state.reshape((11,11,7))
-                # Compute latent space , convert to H,W,C input to keras
                 state = np.moveaxis(state, 0, -1)
                 xtrain_list.append(state)
     xtrain = np.array(xtrain_list)

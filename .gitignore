@@ -21,3 +21,4 @@ _build
 **/out/*
 /Examples/video/
 /Examples/videos/
+/Autoencoder/models/

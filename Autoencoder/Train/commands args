@@ -1,0 +1,25 @@
+--latent_space_dim 16
+--pathbase  "D:\Rodolfo\States\Dataset\Kinematics"
+--datatype "K"
+--samples 100
+--learning_rate 0.0005
+--batch_size 128
+--epochs 5
+
+
+--latent_space_dim 16
+--pathbase  "D:\Rodolfo\States\Dataset\Grid"
+--datatype "Grid"
+--samples 100
+--learning_rate 0.0005
+--batch_size 128
+--epochs 5
+
+
+--latent_space_dim 16
+--pathbase  "D:\Rodolfo\States\Dataset\Image"
+--datatype "Image"
+--samples 10
+--learning_rate 0.0005
+--batch_size 128
+--epochs 2

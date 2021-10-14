@@ -1,0 +1,40 @@
+{
+  "info": "Exp_behavior DQN",
+  "base_config": "configs/experiments/Multienv/exp_base_multi.json",
+  "controlled_vehicles": 1,
+   "observation": {
+     "type": "OccupancyGridObservationLatentSpace",
+       "features": [
+         "presence",
+         "vx",
+         "vy",
+         "cos_h",
+         "sin_h"
+       ],
+       "grid_size": [
+         [
+           -20,
+           50
+         ],
+         [
+          -20,
+           50
+         ]
+       ],
+       "grid_step": [
+         3,
+         3
+       ],
+       "absolute": false,
+       "normalize": true
+   },
+    "agent_config": {
+    "model": {
+      "type": "MultiLayerPerceptron"
+    }
+    },
+    "action": {
+    "type": "DiscreteMetaAction"
+  },
+   "latent_dimention": 16
+}

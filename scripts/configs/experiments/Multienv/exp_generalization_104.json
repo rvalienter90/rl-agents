@@ -1,0 +1,22 @@
+{
+  "info": "",
+  "additional_folder_name": "",
+  "base_config": "configs/experiments/Multienv/exp_multi_Grid_DQN_sa_latent.json",
+  "observation": {
+    "observation_config": {}
+  },
+  "reward": {},
+  "scenario": {},
+  "merging_vehicle": {},
+  "exit_vehicle": {},
+  "agent_config": {
+    "exploration": {},
+    "model": {},
+    "optimizer": {}
+  },
+  "cruising_vehicle": {},
+  "action": {
+    "action_config": {}
+  },
+  "latent_dimention": 32
+}

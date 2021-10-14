@@ -1,0 +1,25 @@
+{
+  "info": "",
+  "additional_folder_name": "",
+  "base_config": "configs/experiments/Multienv/exp_generalization_200.json",
+  "observation": {
+    "observation_config": {}
+  },
+  "reward": {},
+  "scenario": {
+    "road_types": [
+      "intersection"
+    ]
+  },
+  "merging_vehicle": {},
+  "exit_vehicle": {},
+  "agent_config": {
+    "exploration": {},
+    "model": {},
+    "optimizer": {}
+  },
+  "cruising_vehicle": {},
+  "action": {
+    "action_config": {}
+  }
+}

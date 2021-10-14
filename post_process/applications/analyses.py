@@ -15,10 +15,10 @@ def main():
     plots_output_path = os.path.join("..", "..", "scripts", "out", "plots")
     # rodo
     # base_path = os.path.join("D:/Rodolfo/Data/Behavior/simulations/")
-    base_path = os.path.join("D:/Rodolfo/Data/Generalization")
-    folder_path = "simple_complex"
-    # base_path = "D:/"
-    # folder_path = "outtest"
+    # base_path = os.path.join("D:/Rodolfo/Data/Generalization")
+    # folder_path = "simple_complex"
+    base_path = "D:/out7stokes"
+    folder_path = "normal"
 
     add_to_tensorboard_folders = []
     # add_to_tensorboard_folders.append("1100s/train")
@@ -46,8 +46,11 @@ def main():
         #           n=1000,episode_duration=14, compute_gain=False, train=True)
         # # try:
         simulation_path_base = os.path.join(base_path, folder_path, "test")
+        # plt_file(simulation_path_base, plots_output_path_base=plots_output_path, plt_name=folder_path + "_test",
+        #          n=800, episode_duration=14, compute_gain=False, train=False)
         pltfolder(simulation_path_base, plots_output_path_base=plots_output_path, plt_name=folder_path + "_test",
                   n=800,episode_duration=14, compute_gain=False, train=False)
+
         # except:
         #     print("**********************No test***************************")
     if "plt_folder_stats_episode" in modes:
@@ -67,6 +70,35 @@ def main():
 
 
 
+def plt_file(simulation_path_base, plots_output_path_base=None, plt_name=None, n=900, absolute=True,episode_duration=16, compute_gain=None,train=True):
+    overall_stats = apps.get_overall_stats(simulation_path_base, n,episode_duration=episode_duration )
+
+    overall_stats = apps.append_from_json(overall_stats)
+    simple = []
+    complex = []
+    normal = []
+    others = []
+    for idx, path in enumerate(overall_stats['paths']):
+        if overall_stats['metadata'][idx]['env']['scenario']['complex'] == False and overall_stats['metadata'][idx]['env']['scenario']['simple'] == False:
+            normal.append(path)
+        elif overall_stats['metadata'][idx]['env']['scenario']['complex'] == True and overall_stats['metadata'][idx]['env']['scenario']['simple'] == False:
+            complex.append(path)
+        elif overall_stats['metadata'][idx]['env']['scenario']['complex'] == False and overall_stats['metadata'][idx]['env']['scenario']['simple'] == True:
+            simple.append(path)
+        else:
+            others.append(path)
+    print("*********** simple")
+    print(len(simple))
+    print(simple)
+    print("*********** complex")
+    print(len(complex))
+    print(complex)
+    print("*********** normal")
+    print(len(normal))
+    print(normal)
+    print("*********** others")
+    print(len(others))
+    print(others)
 
 def pltfolder(simulation_path_base, plots_output_path_base=None, plt_name=None, n=900, absolute=True,episode_duration=16, compute_gain=None,train=True):
     overall_stats = apps.get_overall_stats(simulation_path_base, n,episode_duration=episode_duration )
