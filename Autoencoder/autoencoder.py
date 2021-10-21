@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import logging
 
 import copy
+
 class Autoencoder:
     """
     Autoencoder represents a Deep Convolutional autoencoder architecture with

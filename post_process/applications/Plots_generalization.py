@@ -16,15 +16,17 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import matplotlib.ticker as mticker
 from matplotlib.patches import FancyBboxPatch
 import matplotlib.image as mpimg
+import pickle
 
 import post_process.applications.applications as apps
 import post_process.visualization.visualization_utils as vutils
-
-SAVE_PATH = os.path.join("..", "Generalization_figures")
-# base_path = "D:/out7stokes/nolatent/"
-base_path = "D:/Rodolfo/Data/Generalization/Results"
 from Autoencoder.autoencoder import Autoencoder , DeepAutoencoder
 from  Autoencoder.train_state_AE import load_dataset_Grid, load_dataset_Image
+SAVE_PATH = os.path.join("..","..","scripts", "out","Generalization_figures")
+# base_path = "D:/out7stokes/nolatent/"
+base_path = "D:/Rodolfo/Data/Generalization/Results"
+
+
 def main():
     try:
         if not os.path.exists(SAVE_PATH):
@@ -36,8 +38,9 @@ def main():
 
     # autoencoder_reconstruction()
     # autoencoder_loss()
-    barplot_compare()
+    # barplot_compare()
     # adaptation_compare()
+    transfer_learning()
 
 def config_plt_rcParams(fontsize=15):
     # https://matplotlib.org/stable/api/matplotlib_configuration_api.html#matplotlib.rcParams
@@ -65,7 +68,6 @@ def barplot_compare():
     plots_output_path = SAVE_PATH
     compare_folder(overall_stats, metrics=[ "total_crash"],
                         plots_output_path=plots_output_path, n=n)
-
 def compare_folder(stats, metrics=None, plots_output_path=None, n=900,persentage=True, set_limit=True):
     figsize = [10, 6]
     # plt.rcdefaults()
@@ -86,7 +88,7 @@ def compare_folder(stats, metrics=None, plots_output_path=None, n=900,persentage
             if persentage:
                 # value =value/n*100
                 if z_name != "average_distance_travelled":
-                    value = float(value)/n*100 -10
+                    value = float(value)/n*100
 
                 else:
                     value = float(value)/400*100
@@ -160,6 +162,7 @@ def compare_folder(stats, metrics=None, plots_output_path=None, n=900,persentage
 
         fig.savefig(fig_out_path + ".png", dpi=300)
         # plt.show()
+
 def autoencoder_reconstruction():
     MLP = False
     Grid = False
@@ -215,7 +218,6 @@ def autoencoder_reconstruction():
         x_train = load_dataset_Grid(samples=2000)
         sample_obs = select_observations(x_train, num_samples=2)
         reconstructed_obs, _ = autoencoderGrid.reconstruct(sample_obs)
-
 def plot_reconstructed_images(images, reconstructed_images,title=None):
     fig = plt.figure(figsize=(15, 3))
     num_images = len(images)
@@ -244,7 +246,6 @@ def plot_images_encoded_in_latent_space(latent_representations, sample_labels):
 def select_observations(obs, num_samples=10):
     sample_index = np.random.choice(range(len(obs)), num_samples)
     return obs[sample_index]
-
 
 def adaptation_compare():
     n_episode = 900
@@ -365,7 +366,129 @@ def plot_heat_map(data,labels,plotname):
     fig.savefig(os.path.join(SAVE_PATH,name ))
 
 
+def transfer_learning():
+    from_drive_to_exit = "run_20210726-231239_18996_exp_behaviorr_curriculum_drive_then_exit"
+    exit_from_scatch = "run_20210726-231210_17864_exp_behavior_exit_scrath"
+    from_merge_to_exit = "run_20210803-160351_19376_exp_behavior_curriculum_merging_then_exit"
 
+    simulation_path_base_exit = os.path.join(base_path, "transfer_learning")
+
+    fontsize = 13
+
+    # plt.style.use('ggplot')
+    # plt.style.use('seaborn-bright')
+    # fig, axs = plt.subplots(1, 4, figsize=(12, 2.9))
+    fig = plt.figure(figsize=(6, 4), constrained_layout=False, dpi=400)
+    gs1 = fig.add_gridspec(nrows=1, ncols=1, left=0.12, right=0.95, wspace=0.2, hspace=0.3,
+                           bottom=0.2, top=0.9)
+
+    ax1 = fig.add_subplot(gs1[0, 0])
+    # colors = [np.random.rand(3, ) for p in range(0, 3)]
+    colors = [DARK_GRAY,DARK_ORANGE]
+    span = 1000
+    show = False
+
+
+    subfolders = [exit_from_scatch, from_merge_to_exit]
+    espisodes_data = cutils.load_espisodes_data(simulation_path_base_exit, subfolders=subfolders)
+    rewards_data_array, rewards_data_array_std = cutils.espisodes_data_array_from_dict(espisodes_data,
+                                                                                       stat="episode_reward", span=span,
+                                                                                       std=True)
+
+    x_limit = (0, 6000)
+    x_ticks = [0, 2500, 5000]
+    x_ticks_labels = ["0", "2.5k", "5k"]
+    vutils.plot_time_array_simple(rewards_data_array, ax=ax1, colors=colors, linewidth=2,
+                                  data_std=rewards_data_array_std, data_std_scale=3)
+
+    # vutils.plot_time_array(rewards_data_array, ini=1, end=None, x=None, y_label=None, x_label="Episode",
+    #                        title=None,
+    #                        y_limit=[0,12], x_limit=x_limit, colors=colors, show=show, legend=None,
+    #                        data_std=rewards_data_array_std, ax=axs2, x_ticks=x_ticks,
+    #                        x_ticks_labels=x_ticks_labels, fontsize=fontsize, data_std_scale=3)
+
+
+
+    ax1.set_xlabel("Episode", fontsize=fontsize, labelpad=5)
+    ax1.set_xticks(x_ticks)
+    ax1.set_xticklabels(labels=x_ticks_labels, size=fontsize)
+    ax1.set_ylabel("Episode Reward", fontsize=fontsize, labelpad=0)
+
+    ax1.set_ylim(0, 9)
+    ax1.set_yticks([0, 4, 8])
+    ax1.set_yticklabels(labels=[0,4,8], size=fontsize)
+    ax1.spines["right"].set_visible(False)
+    # axs[0].spines["bottom"].set_visible(False)
+    ax1.spines["top"].set_visible(False)
+    ax1.set_title("Transfer Learning", fontsize=fontsize, weight='bold')
+
+    legends = ["T1", "T2"]
+    ax1.legend(legends, frameon=False, loc="lower left", markerscale=1, fontsize=fontsize,
+               bbox_to_anchor=[0.7, 0])
+
+    # leg = axs2.get_legend()
+    # leg.legendHandles[0].set_color(SLAC)
+    # leg.legendHandles[1].set_color(LILAC)
+    # leg.legendHandles[0].set_linewidth(2.0)
+    # leg.legendHandles[1].set_linewidth(2.0)
+    # leg.legendHandles[2].set_color(DARK_ORANGE)
+    # leg.legendHandles[2].set_linewidth(3.0)
+
+    # for legobj in leg.legendHandles:
+    #     legobj.set_linewidth(3.0)
+
+    # plt.tight_layout()
+    # fig.show()
+    # fig.tight_layout()
+    # fig.show()
+
+    # plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
+    # fig.show()
+
+    fig.savefig(os.path.join(SAVE_PATH, "Gen_Fig_C_Trasnfer_Learning.png"))
+
+def autoencoder_loss():
+    model_base_folder = os.path.join(base_path, 'autoencoder', 'models')
+    model_folder = os.path.join(model_base_folder, "Autoencoder_MLP_Kinematics_16_date-2021-10-02-15-54-50")
+    history_path = os.path.join(model_folder, "history.pkl")
+    with open(history_path, "rb") as f:
+        history = pickle.load(f)
+
+    fig = plt.figure(figsize=(6, 4), constrained_layout=False, dpi=400)
+    gs1 = fig.add_gridspec(nrows=1, ncols=1, left=0.15, right=0.95, wspace=0.2, hspace=0.3,
+                           bottom=0.2, top=0.9)
+    ax1 = fig.add_subplot(gs1[0, 0])
+
+    fontsize = 16
+
+    metric = 'mean_absolute_error'
+    # metric = 'mean_squared_error' 'mean_absolute_error' 'mean_absolute_percentage_error'
+    test = history[metric]
+    val = history['val_' + metric]
+
+    data = [test,val]
+    data = np.array(data)
+
+    colors = [DARK_BLUE, DARK_GREEN]
+    span = 1000
+
+    vutils.plot_time_array_simple(data, ax=ax1, colors=colors, linewidth=2,
+                                  data_std=None, data_std_scale=3)
+
+    ax1.set_xlabel("Epochs", fontsize=fontsize, labelpad=5)
+    ax1.set_ylabel("MAE Loss", fontsize=fontsize, labelpad=0)
+    ax1.spines["right"].set_visible(False)
+    # axs[0].spines["bottom"].set_visible(False)
+    ax1.spines["top"].set_visible(False)
+    legends = ["Train", "Validation"]
+    ax1.legend(legends, frameon=False, loc="lower left", markerscale=1, fontsize=fontsize,
+               bbox_to_anchor=[0.5, 0.5])
+
+    fig.savefig(os.path.join(SAVE_PATH, "Gen_Fig_D_AE_loss.png"))
+
+    # plt.plot(test)
+    # plt.plot(val)
+    # plt.show()
 
 if __name__ == '__main__':
     main()

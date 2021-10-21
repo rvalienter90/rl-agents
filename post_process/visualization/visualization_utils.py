@@ -316,6 +316,38 @@ def plot_time_array(array, ini=1, end=None, x=None, y_label="data", x_label="tim
 
     return fig
 
+def plot_time_array_simple(array, ax=None, colors=None, ini=1, end=None,linewidth=1, data_std= [],data_std_scale=1):
+    """
+    1 plot n variables vs time (from ini to end)
+
+    Input
+    :param array n_variables vs x
+
+    :return figure
+    """
+    if end is None:
+        end = len(array[0])
+    x_axes = np.arange(ini, end + 1)
+
+    if ax is None:
+        fig, ax = plt.subplots()
+    else:
+        fig = None
+
+    if colors is None:
+        colors = [np.random.rand(3, ) for p in range(0, len(array))]
+
+    for p in range(0,len(array)):
+        data = array[p]
+        ax.plot(x_axes,data, color=colors[p],linewidth=linewidth)
+        # ax.fill_between(x_axes, data_mean - data_std, data_mean + data_std, color="gainsboro")
+        if len(data_std)>1:
+            data_std_i = data_std[p][ini - 1:end] / data_std_scale
+            ax.fill_between(x_axes, data - data_std_i, data + data_std_i,
+                            alpha=0.25, facecolor=colors[p],
+                            linewidth=4, linestyle='dashdot', antialiased=True)
+
+    return fig
 
 
 def barplot_annotate_brackets_vertical(num1, num2, data, center, height, yerr=None, dh=.05, barh=.05, fs=None, maxasterix=None):
