@@ -40,7 +40,8 @@ def main():
     # autoencoder_loss()
     # barplot_compare()
     # adaptation_compare()
-    transfer_learning()
+    adaptation_compare_trajectories()
+    # transfer_learning()
 
 def config_plt_rcParams(fontsize=15):
     # https://matplotlib.org/stable/api/matplotlib_configuration_api.html#matplotlib.rcParams
@@ -266,7 +267,8 @@ def adaptation_compare():
     experiments_interval = [355, 374]
     plotname = 'Gen_Fig_A_Adaptation_nolatent'
     adaptation_plot(overall_stats, metric, n_episode, experiments_interval,plotname)
-def adaptation_plot(overall_stats,metric,n_episode,experiments_interval,plotname):
+
+def adaptation_plot(overall_stats,metric,n_episode,experiments_interval,plotname,plot_name=True):
 
 
     exp_dict = apps.get_experiments(overall_stats, metrics=metric, train=False, n=n_episode)
@@ -276,7 +278,10 @@ def adaptation_plot(overall_stats,metric,n_episode,experiments_interval,plotname
     r=0
     c=0
     for i in range(experiments_interval[0], experiments_interval[1]+1):
-        data = np.array(exp_dict[str(i)])
+        if plot_name:
+            data = i
+        else:
+            data = np.array(exp_dict[str(i)])
         adjance_matrix[r][c] = data
         c+=1
         if c ==5:
@@ -288,13 +293,262 @@ def adaptation_plot(overall_stats,metric,n_episode,experiments_interval,plotname
     # all
     c = 0
     for i in range(experiments_interval[0]-5, experiments_interval[0]):
-        data = np.array(exp_dict[str(i)])
+        if plot_name:
+            data = i
+        else:
+            data = np.array(exp_dict[str(i)])
         adjance_matrix[4][c] = data
         c += 1
 
     adjance_matrix_original= np.round(adjance_matrix,1)
     plottype = 'crash'
     plot_heat_map(adjance_matrix,adjance_matrix_original,plotname)
+
+def adaptation_compare_trajectories():
+    n_episode = 900
+    max_distance = 400
+
+    # adaptation_folder = os.path.join(base_path, "adaptation", "test")
+    # data_folder = os.path.join(base_path,'adaptation', "latent","test")
+    # overall_stats = get_overall_stats(data_folder, n_episode, episode_duration=15)
+    # metric = ["total_crash"]
+
+    fig = plt.figure(figsize=(24, 24), dpi=400, constrained_layout=False)
+    gs1 = fig.add_gridspec(nrows=5, ncols=5, left=0.084, right=0.98, wspace=0.15, hspace=0.7,
+                           bottom=0.1, top=0.92)
+
+    axs = [[0 for j in range(0,5)] for i in range(0,5)]
+    for r in range(0,5):
+        for c in range(0,5):
+            axs[r][c] = fig.add_subplot(gs1[r,c])
+
+
+
+
+    path_nolatent = [
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223248_6733_exp_generalization_355-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223248_6730_exp_generalization_356-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223248_6731_exp_generalization_357-test',
+                     'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223248_6732_exp_generalization_358-test',
+                     'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223248_6734_exp_generalization_359-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223305_19793_exp_generalization_360-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223304_19790_exp_generalization_361-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223232_21529_exp_generalization_362-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223304_19792_exp_generalization_363-test',
+                     'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223306_19794_exp_generalization_364-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223346_7664_exp_generalization_365-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223345_7661_exp_generalization_366-test',
+                     'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223345_7662_exp_generalization_367-test',
+                     'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223345_7663_exp_generalization_368-test',
+                     'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223346_7665_exp_generalization_369-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223409_17158_exp_generalization_370-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223232_21528_exp_generalization_371-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223409_17155_exp_generalization_372-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223232_21530_exp_generalization_373-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223410_17157_exp_generalization_374-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223232_21532_exp_generalization_350-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223409_17154_exp_generalization_351-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223304_19791_exp_generalization_352-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223409_17156_exp_generalization_353-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\nolatent\\test\\run_20211006-223232_21531_exp_generalization_354-test'
+    ]
+    adaptation_plot_trajectories(path_nolatent, axs,colors=[DARK_GRAY])
+
+    # latent
+    # experiments_interval = [305, 324]
+    # plotname = 'Gen_Fig_A_Adaptation_latent_trajectory'
+    # paths = overall_stats["paths"]
+    pathslatent= [
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-232327_150933_exp_generalization_305-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-232439_198482_exp_generalization_306-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-232423_30527_exp_generalization_307-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-220630_203488_exp_generalization_308-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-232423_30530_exp_generalization_309-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-232423_30529_exp_generalization_310-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-232423_30526_exp_generalization_311-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-223150_30850_exp_generalization_312-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-221435_12261_exp_generalization_313-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-232439_198485_exp_generalization_314-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-232654_31457_exp_generalization_315-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-232327_150930_exp_generalization_316-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-232654_31452_exp_generalization_317-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-221135_207774_exp_generalization_318-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-232654_31458_exp_generalization_319-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-232654_31459_exp_generalization_320-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-232654_31451_exp_generalization_321-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-232654_31454_exp_generalization_322-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-232654_31455_exp_generalization_323-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-232654_31456_exp_generalization_324-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-232439_198486_exp_generalization_300-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-232654_31450_exp_generalization_301-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-232327_150931_exp_generalization_302-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-220224_188399_exp_generalization_303-test',
+        'D:/Rodolfo/Data/Generalization/Results\\adaptation\\latent\\test\\run_20211006-235807_22293_exp_generalization_304-test']
+    adaptation_plot_trajectories(pathslatent, axs,colors=[DARK_ORANGE])
+
+
+    # data_folder_nolatent = os.path.join(base_path,'adaptation',  "nolatent","test")
+    # overall_stats = get_overall_stats(data_folder_nolatent, n_episode, episode_duration=15)
+    # paths = overall_stats["paths"]
+    # print(paths)
+
+
+
+
+
+    name  ="test_trajectories"
+    fig.savefig(os.path.join(SAVE_PATH, name))
+    # plt.show()
+    # nolatent
+    # data_folder = os.path.join(base_path,'adaptation',  "nolatent","test")
+    # overall_stats = get_overall_stats(data_folder, n_episode, episode_duration=15)
+    # experiments_interval = [355, 374]
+    # plotname = 'Gen_Fig_A_Adaptation_nolatent'
+    # adaptation_plot_trajectories(overall_stats, metric, n_episode, experiments_interval,plotname)
+
+def adaptation_plot_trajectories(paths,axs,colors=[DARK_ORANGE]):
+    time_steps = [i for i in range(950,963)]
+    r = 0
+    c = 0
+    for i, path in enumerate(paths):
+        # exp = path.split("_")[-1]
+        # exp = exp.split("-")[0]
+
+        data_folder = path
+        print(data_folder)
+        ax = axs[r][c]
+        invert = False
+        if c ==2 or c==3:
+            # vehicles = [-1]
+            vehicles = [12]
+
+        else:
+            vehicles = [12]
+        if c ==0:
+            invert = False
+
+        # if c == 4:
+        #     r += 1
+        #     c = 0
+        #     continue
+        plot_trajectories(data_folder, time_steps, ax, vehicles=vehicles,invert =invert,colors=colors, type= c)
+        if c==2 or c==3 or c==1 or c==0 or c==4:
+            if colors[0] == DARK_ORANGE:
+                ax.invert_yaxis()
+        if c == 2:
+            ax.set_ylim(6, 10)
+            ax.set_xlim(100, 400)
+        if c == 3:
+            ax.set_ylim(2, 6)
+            ax.set_xlim(100, 400)
+        if c == 0:
+            ax.set_xlim(-100, 10)
+            ax.set_ylim(125, -10)
+        if c == 1:
+            ax.set_ylim(80,-80)
+            ax.set_xlim(0, 30)
+        if c == 4:
+            ax.set_ylim(125,-50)
+            ax.set_xlim(-100, 400)
+        c += 1
+        if c >= 5:
+            r += 1
+            c = 0
+        # update_axes_exit(axs, idx=1)
+    return
+
+
+def plot_trajectories(data_folder, time_steps, ax, vehicles=[-1, 12],
+                                         colors=[DARK_ORANGE], downsample_steps=1, duration=14,invert =False,type=0):
+    folder = data_folder
+    timestep_logs_path = os.path.join(folder, "raw_logfiles", "timestep_logs")
+
+    linestyle = '-'
+    # linewidth = 1
+    linewidth = 0.2
+    s = 0
+    num = 150
+
+    trajectory_array = []
+    speed_array = []
+    x_vals = []
+
+    # for episode in range(1, 2):
+    for episode in time_steps:
+        for vehicle, color in zip(vehicles, colors):
+                plot_trajectory(timestep_logs_path, ax, vehicle, episode, color, linestyle,
+                                     linewidth, s, num, trajectory_array, x_vals,invert =invert,type=type)
+
+
+
+def plot_trajectory(timestep_logs_path, ax, vehicle, episode, color, linestyle,
+                         linewidth, s, num, trajectory_array, x_vals,invert =False,type=0):
+    stats = ["positionx", "positiony"]
+    time_step_logs = cutils.load_time_step_data(timestep_logs_path, vehicles=[vehicle], episode=episode)
+    time_step_logs_array = cutils.time_step_array_from_dict(time_step_logs, stats=stats)
+    if invert:
+        y_array = time_step_logs_array[0][0]
+        x_array = time_step_logs_array[1][0]
+    else:
+        x_array = time_step_logs_array[0][0]
+        y_array = time_step_logs_array[1][0]
+
+    # y_array = y_array + np.random.random(len(y_array)) * 1.5 - 0.4
+    rand = np.random.random(len(y_array))
+    amp = np.linspace(0, 2, len(y_array))
+    noise = np.multiply(rand, amp)
+    offset = -0.4
+
+    if  'positiony' in y_array:
+        return
+        # y_array = np.float32(y_array[2:])
+        # x_array = np.float32(x_array[2:])
+    if np.max((y_array))>5 and type==3:
+        if episode in [951,952,955,958]:
+            return
+        # print("****************. 5x episode",episode)
+        # print(timestep_logs_path)
+        # print("****************. 5x ")
+    scale =10
+    if type==0:
+        scale =0.5
+
+    y_array = y_array + np.random.random(len(y_array))/scale
+
+    x_array = x_array + np.random.random(len(x_array))/scale
+
+    raw = True
+    if raw:
+        ax.plot(x_array, y_array, color=color, linestyle=linestyle, linewidth=linewidth)
+        return
+
+
+    # y_array = y_array + np.random.random(len(y_array)) + noise + offset
+    y_array = y_array + np.random.random(len(y_array)) + rand
+
+    x_array = x_array + np.random.random(len(x_array))/10
+    assert len(x_array) == len(y_array)
+
+    # tck, u = splprep([t_array, x_array], s=s)
+    # new_points = splev(u, tck)
+    # f2 = interp1d(new_points[0], new_points[1], kind='cubic', fill_value="extrapolate")
+    # xnew2 = np.linspace(0, max(new_points[0]), num=num, endpoint=True)
+
+    f = interp1d(x_array, y_array, kind='slinear', fill_value="extrapolate")
+
+    # f = interp1d(x_array, y_array, kind='cubic', fill_value="extrapolate")
+    xnew = np.linspace(min(x_array), max(x_array), num=num, endpoint=True)
+
+    data = f(xnew)
+    # trajectory_array.append(data)
+    x_vals.append(xnew)
+
+    # axs[index].plot(xnew2, f2(xnew2), color=color, linestyle=linestyle, linewidth=linewidth)
+    ax.plot(xnew, f(xnew), color=color, linestyle=linestyle, linewidth=linewidth)
+    # axs[index].plot(x_array, y_array, color=color, linestyle=linestyle, linewidth=linewidth)
+
+    return
+
 def plot_heat_map(data,labels,plotname):
     fontsize = 20
     fig = plt.figure(figsize=(8, 7.2), dpi=400, constrained_layout=False)

@@ -43,6 +43,8 @@ import sys
 def get_project_root() -> Path:
     return Path(__file__).parent.parent.parent
 project_root = get_project_root()
+
+# To run in cluster
 # rlagentsvar= os.path.join(str(project_root),'rl-agents','rl_agents')
 rlagentsvar = '/home/rvalienteromero/Coop/coop_repo_multi/rl-agents/'
 print(rlagentsvar)
