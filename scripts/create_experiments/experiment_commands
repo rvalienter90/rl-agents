@@ -103,6 +103,29 @@ configs/experiments/IEEE_Access/exp_merge_110.json
 out/HighwayEnv/Data/110s/run_20210119-135809_31517_exp_merge_110/checkpoint-final.tar
 
 
+Multienv
+evaluate
+--no-display
+--train
+--episodes
+10000
+--test
+--episodes_test
+1000
+--video_save_freq
+1
+--model_save_freq
+4000
+--create_episode_log
+--create_timestep_log
+--individual_episode_log_level
+2
+--environment
+configs/experiments/Multienv/exp_base_interception.json
+--name-from-envconfig
+--output_folder
+"D:\Rodolfo\out"
+
 
 
 
