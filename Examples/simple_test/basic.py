@@ -1,7 +1,7 @@
 import gym
 import highway_env
 
-env = gym.make("highway-modif-v0")
+env = gym.make("highway-v0")
 # env = gym.make("intersection-v0")
 
 env.reset()

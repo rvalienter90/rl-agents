@@ -45,14 +45,14 @@ def get_project_root() -> Path:
 project_root = get_project_root()
 
 # To run in cluster
-# rlagentsvar= os.path.join(str(project_root),'rl-agents','rl_agents')
-rlagentsvar = '/home/rvalienteromero/Coop/coop_repo_multi/rl-agents/'
-print(rlagentsvar)
-sys.path.append(rlagentsvar)
-# highwayenvvar= os.path.join(str(project_root),'highway-env','highway_env')
-highwayenvvar = '/home/rvalienteromero/Coop/coop_repo_multi/highway-env/'
-print(highwayenvvar)
-sys.path.append(highwayenvvar)
+# # rlagentsvar= os.path.join(str(project_root),'rl-agents','rl_agents')
+# rlagentsvar = '/home/rvalienteromero/Coop/coop_repo_multi/rl-agents/'
+# print(rlagentsvar)
+# sys.path.append(rlagentsvar)
+# # highwayenvvar= os.path.join(str(project_root),'highway-env','highway_env')
+# highwayenvvar = '/home/rvalienteromero/Coop/coop_repo_multi/highway-env/'
+# print(highwayenvvar)
+# sys.path.append(highwayenvvar)
 
 from rl_agents.trainer import logger
 from rl_agents.trainer.evaluation import Evaluation
