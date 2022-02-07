@@ -67,7 +67,27 @@ class Autoencoder:
         #             metrics.mean_absolute_percentage_error]
         self.model.compile(optimizer=optimizer, loss=mse_loss,metrics=metricsi)
 
-    def train(self, x_train, batch_size, num_epochs):
+    # def train(self, x_train, batch_size, num_epochs):
+    #     log_dir = os.path.join(self.base_folder, 'logs', 'training')
+    #     self._create_folder_if_it_doesnt_exist(self.base_folder)
+    #
+    #     tensorboard_cbk = TensorBoard(log_dir=log_dir)
+    #     # history= self.model.fit(x_train,
+    #     #                x_train,
+    #     #                batch_size=batch_size,
+    #     #                epochs=num_epochs,
+    #     #                shuffle=True,
+    #     #                validation_split = 0.2)
+    #     history = self.model.fit(x_train,
+    #                              x_train,
+    #                              batch_size=batch_size,
+    #                              epochs=num_epochs,
+    #                              shuffle=True,
+    #                              validation_split=0.2, verbose=1, callbacks=[tensorboard_cbk])
+    #     self.history = history
+    #     return history
+
+    def train(self, x_train,y_train, batch_size, num_epochs):
         log_dir = os.path.join(self.base_folder, 'logs', 'training')
         self._create_folder_if_it_doesnt_exist(self.base_folder)
 
@@ -79,16 +99,21 @@ class Autoencoder:
         #                shuffle=True,
         #                validation_split = 0.2)
         history = self.model.fit(x_train,
-                                 x_train,
+                                 y_train,
                                  batch_size=batch_size,
                                  epochs=num_epochs,
                                  shuffle=True,
                                  validation_split=0.2, verbose=1, callbacks=[tensorboard_cbk])
         self.history = history
         return history
-    def evaluate(self, x_train):
+
+    # def evaluate(self, x_train):
+    #     self.model.evaluate(x_train,
+    #                         x_train)
+
+    def evaluate(self, x_train,y_train):
         self.model.evaluate(x_train,
-                       x_train)
+                       y_train)
 
     def save(self, save_folder=None):
         if not save_folder:

@@ -14,7 +14,7 @@ import tensorflow as tf
 parser = argparse.ArgumentParser()
 # Add an argument
 parser.add_argument('--latent_space_dim', type=int, required=False,default=64)
-parser.add_argument('--pathbase', type=str, required=False,default="D:\Rodolfo\States\Dataset\Kinematics")
+parser.add_argument('--pathbase', type=str, required=False,default="E:\Data\Datasets\Image")
 parser.add_argument('--datatype', type=str, required=False,default="Image")
 parser.add_argument('--samples', type=str, required=False,default='None')
 parser.add_argument('--learning_rate', type=float, required=False,default=0.0005)
@@ -26,17 +26,29 @@ args = parser.parse_args()
 # LEARNING_RATE = 0.0005
 # BATCH_SIZE = 128
 # EPOCHS = 5
-def load_mnist():
-    (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
-    x_train = x_train.astype("float32") / 255
-    x_train = x_train.reshape(x_train.shape + (1,))
-    x_test = x_test.astype("float32") / 255
-    x_test = x_test.reshape(x_test.shape + (1,))
+def plot_images_state_next_state(images, next_images,title=None):
+    fig = plt.figure(figsize=(15, 3))
+    num_images = len(images)
+    for i in range(num_images):
+        image = images[i,:,:]
+        next_image = next_images[i,:,:]
+        image = image.reshape((64, 128, 1))
+        next_image = next_image.reshape((64, 128, 1))
+        # image = image.squeeze()
+        ax = fig.add_subplot(2, num_images, i + 1)
+        ax.axis("off")
+        ax.imshow(image, cmap="gray_r")
+        # next_image = next_image.squeeze()
+        ax = fig.add_subplot(2, num_images, i + num_images + 1)
+        ax.axis("off")
+        ax.imshow(next_image, cmap="gray_r")
+    # fig.suptitle(title)
+    plt.show()
+    fig.savefig(title)
+    return fig
 
-    return x_train, y_train, x_test, y_test
-
-def train_image(x_train, learning_rate, batch_size, epochs,latent_space_dim=64):
+def train_image(x_train,y_train, learning_rate, batch_size, epochs,latent_space_dim=64):
     autoencoder = Autoencoder(
         input_shape=(64, 128, 1),
         conv_filters=(16, 32, 32, 32),
@@ -47,8 +59,7 @@ def train_image(x_train, learning_rate, batch_size, epochs,latent_space_dim=64):
     )
     autoencoder.summary()
     autoencoder.compile(learning_rate)
-    # history = autoencoder.train(x_train, batch_size, epochs)
-    history = autoencoder.train(x_train,x_train, batch_size, epochs)
+    history = autoencoder.train(x_train,y_train, batch_size, epochs)
     return autoencoder,history
 def train_grid(x_train, learning_rate, batch_size, epochs,latent_space_dim=32):
     autoencoder = Autoencoder(
@@ -76,7 +87,7 @@ def train_MLP(x_train, learning_rate, batch_size, epochs,latent_space_dim=16):
 
 
 # "D:\Rodolfo\States\Dataset\Grid"
-def load_dataset_Image(pathbase="D:\Rodolfo\States\Dataset\Image", samples= None,fixed_index=None):
+def load_dataset_Image_prediction(pathbase="D:\Rodolfo\States\Dataset\Image", samples= None, fixed_index=None):
     file_list = []
     for path, folders, files in os.walk(pathbase):
         for folder in folders:
@@ -86,6 +97,7 @@ def load_dataset_Image(pathbase="D:\Rodolfo\States\Dataset\Image", samples= None
                     if fnmatch.fnmatch(file, '*.pickle'):
                         file_list.append(os.path.join(path, file))
     xtrain_list = []
+    ytrain_list = []
     if fixed_index:
         file_list_sample = np.array(file_list)[fixed_index]
     elif samples:
@@ -94,6 +106,7 @@ def load_dataset_Image(pathbase="D:\Rodolfo\States\Dataset\Image", samples= None
     else:
         file_list_sample = file_list
 
+    counter = 0
     for idxf, file in enumerate(file_list_sample):
         # if idxf >100:
         #     break
@@ -101,20 +114,33 @@ def load_dataset_Image(pathbase="D:\Rodolfo\States\Dataset\Image", samples= None
         #     if idxf >samples:
         #         break
         with open(file, 'rb') as handle:
+
             data = pickle.load(handle)
             for idx, d in enumerate(data):
                 if idx<3:
                     continue
+
                 state = d['state']
+                nextstate = d['next_state']
                 # state = state.reshape((11,11,7))
-                state = state[0,:,:]
+                show_image = False
+                if show_image:
+                    counter += 1
+                    plot_images_state_next_state(state, nextstate, title=str(counter))
                 # state = np.moveaxis(state, 0, -1)
                 # img = Image.fromarray(state * 255).show()
+
+                state = state[0,:,:]
+                nextstate = nextstate[0, :, :]
+
                 state = state.reshape((64,128,1))
+                nextstate = nextstate.reshape((64, 128, 1))
 
                 xtrain_list.append(state)
+                ytrain_list.append(nextstate)
     xtrain = np.array(xtrain_list)
-    return xtrain
+    ytrain = np.array(ytrain_list)
+    return xtrain,ytrain
 def load_dataset_Grid(pathbase="D:\Rodolfo\States\Dataset\Grid", samples= None):
     file_list = []
     for path, folders, files in os.walk(pathbase):
@@ -209,9 +235,10 @@ if __name__ == "__main__":
         autoencoder.evaluate(x_train)
 
     elif datatype == "Image":
-        x_train = load_dataset_Image(pathbase=pathbase, samples=samples)
-        autoencoder, history = train_image(x_train, learning_rate, batch_size, epochs, latent_space_dim=latent_space_dim)
-        autoencoder.evaluate(x_train)
+        samples = 2000
+        x_train, y_train = load_dataset_Image_prediction(pathbase=pathbase, samples=samples)
+        autoencoder, history = train_image(x_train, y_train, learning_rate, batch_size, epochs, latent_space_dim=latent_space_dim)
+        autoencoder.evaluate(x_train, y_train)
 
     elif datatype == "K":
         x_train = load_dataset_MLP(pathbase=pathbase, samples=samples)
@@ -221,11 +248,6 @@ if __name__ == "__main__":
     logging.basicConfig(filename=logger_file, filemode='w', format='%(name)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
     logging.info('Logging')
     logging.info(args)
-
-    # x_train= load_dataset_Grid(samples=None)
-
-    # x_train, _, _, _ = load_mnist()
-    # autoencoder = train(x_train[:10000], LEARNING_RATE, BATCH_SIZE, EPOCHS)
 
     # Plot training & validation accuracy values
     autoencoder.save()

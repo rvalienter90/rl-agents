@@ -24,8 +24,8 @@ from Autoencoder.autoencoder import Autoencoder , DeepAutoencoder
 from  Autoencoder.train_state_AE import load_dataset_Grid, load_dataset_Image
 SAVE_PATH = os.path.join("..","..","scripts", "out","Generalization_figures")
 # base_path = "D:/out7stokes/nolatent/"
-base_path = "D:/Rodolfo/Data/Generalization/Results"
-
+base_path = "D:/Data/Data/Generalization/Results"
+SAVE_PATH = os.path.join(base_path,"Generalization_figures")
 
 def main():
     try:
@@ -36,12 +36,14 @@ def main():
     min_z_global = 0
     config_plt_rcParams()
 
+    # transfer_learning()
+    # barplot_compare()
     # autoencoder_reconstruction()
     # autoencoder_loss()
-    # barplot_compare()
+    autoencoder_reconstruction_chain()
     # adaptation_compare()
-    adaptation_compare_trajectories()
-    # transfer_learning()
+    # adaptation_compare_trajectories()
+
 
 def config_plt_rcParams(fontsize=15):
     # https://matplotlib.org/stable/api/matplotlib_configuration_api.html#matplotlib.rcParams
@@ -164,6 +166,65 @@ def compare_folder(stats, metrics=None, plots_output_path=None, n=900,persentage
         fig.savefig(fig_out_path + ".png", dpi=300)
         # plt.show()
 
+def autoencoder_reconstruction_chain():
+    MLP = False
+    Grid = False
+    image = True
+
+
+    if image:
+        model_base_folder= os.path.join(base_path,'autoencoder','models')
+        Imagemodel64 = os.path.join(model_base_folder,"Autoencoder_CNN_Image_64_date-2021-10-02-16-11-55")
+
+
+        pathbase = os.path.join(base_path, 'autoencoder', 'datasetsamples')
+        # x_train = load_dataset_Image(pathbase=pathbase, samples=50)
+        x_train = load_dataset_Image(pathbase=pathbase, fixed_index=[i+1 for i in range(40)])
+
+        num_sample_images_to_show = 8
+        # sample_obs = select_observations(x_train, num_samples=1)
+        sample_obs = select_observations(x_train, fixed_index=[100])
+
+        # models = [Imagemodel64]
+        models = [Imagemodel64]
+        names = ['Imagemodel64']
+        for idx,model in enumerate(models):
+            autoencoder = Autoencoder.load(model)
+
+            reconstructed_images, latent_representations = autoencoder.reconstruct(sample_obs)
+            title = names[idx] + '_latent_representations'
+            latent_size = len(latent_representations[0])
+            latent_images = plot_reconstructed_images(sample_obs, latent_representations.reshape(1, 8,int(latent_size/8)),title)
+            title = names[idx] + '_reconstructed_images'
+            reconstructed_images_fig = plot_reconstructed_images(sample_obs, reconstructed_images,title)
+            figname = 'Gen_Fig_B_latent_representations' + names[idx]
+            latent_images.savefig(os.path.join(SAVE_PATH,figname))
+            figname = 'Gen_Fig_B_reconstructed_images' + names[idx]
+            reconstructed_images_fig.savefig(os.path.join(SAVE_PATH, figname))
+        num_steps = 20
+        reconstructed_images_chain_fig = plt.figure(figsize=(3, num_steps))
+
+        image = sample_obs.squeeze()
+        ax = reconstructed_images_chain_fig.add_subplot(num_steps, 1, 1)
+        ax.axis("off")
+        ax.imshow(image, cmap="gray_r")
+        reconstructed_image = reconstructed_images.squeeze()
+        ax = reconstructed_images_chain_fig.add_subplot(num_steps, 1, 2)
+        ax.axis("off")
+        ax.imshow(reconstructed_image, cmap="gray_r")
+
+
+        for i in range(num_steps-2):
+            reconstructed_images, new_latent_representations = autoencoder.reconstruct(reconstructed_images)
+            reconstructed_image = reconstructed_images.squeeze()
+            ax = reconstructed_images_chain_fig.add_subplot(num_steps,1, i + 3)
+            ax.axis("off")
+            ax.imshow(reconstructed_image, cmap="gray_r")
+
+        reconstructed_images_chain_fig.suptitle("reconstructed_images_chain_fig")
+        reconstructed_images_chain_fig.savefig(os.path.join(SAVE_PATH, "reconstructed_images_chain_fig"))
+
+
 def autoencoder_reconstruction():
     MLP = False
     Grid = False
@@ -234,6 +295,7 @@ def plot_reconstructed_images(images, reconstructed_images,title=None):
     fig.suptitle(title)
     return fig
     # plt.show()
+
 def plot_images_encoded_in_latent_space(latent_representations, sample_labels):
     plt.figure(figsize=(10, 10))
     plt.scatter(latent_representations[:, 0],
@@ -244,8 +306,11 @@ def plot_images_encoded_in_latent_space(latent_representations, sample_labels):
                 s=2)
     plt.colorbar()
     plt.show()
-def select_observations(obs, num_samples=10):
-    sample_index = np.random.choice(range(len(obs)), num_samples)
+def select_observations(obs, num_samples=10, fixed_index=None):
+    if fixed_index:
+        sample_index = fixed_index
+    else:
+        sample_index = np.random.choice(range(len(obs)), num_samples)
     return obs[sample_index]
 
 def adaptation_compare():
@@ -727,7 +792,7 @@ def autoencoder_loss():
     span = 1000
 
     vutils.plot_time_array_simple(data, ax=ax1, colors=colors, linewidth=2,
-                                  data_std=None, data_std_scale=3)
+                                  data_std=[], data_std_scale=3)
 
     ax1.set_xlabel("Epochs", fontsize=fontsize, labelpad=5)
     ax1.set_ylabel("MAE Loss", fontsize=fontsize, labelpad=0)

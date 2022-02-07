@@ -290,8 +290,8 @@ class Evaluation(object):
             try:
                 self.agent.record(previous_observation, action, reward, self.observation, terminal, info)
 
-                save_data_set = True
-                if save_data_set:
+                # save_data_set = True
+                if self.env.config['save_dataset']:
                     data = {
                         'state': previous_observation,
                         'action': action,
