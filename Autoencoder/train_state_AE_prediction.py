@@ -1,6 +1,8 @@
-from tensorflow.keras.datasets import mnist
+# from tensorflow.keras.datasets import mnist
 
-from Autoencoder.autoencoder import Autoencoder,DeepAutoencoder
+# from Autoencoder.autoencodertf1 import Autoencoder,DeepAutoencoder
+from Autoencoder.autoencodertf2 import Autoencoder
+
 import pickle
 import os, fnmatch
 import numpy as np
@@ -13,8 +15,10 @@ import tensorflow as tf
 # Create the parser
 parser = argparse.ArgumentParser()
 # Add an argument
+# DATA_PATH= "E:\Data\Datasets\Image"
+DATA_PATH = "/media/rodolfo/DataSSD/Data/Datasets/Image"
 parser.add_argument('--latent_space_dim', type=int, required=False,default=64)
-parser.add_argument('--pathbase', type=str, required=False,default="E:\Data\Datasets\Image")
+parser.add_argument('--pathbase', type=str, required=False,default=DATA_PATH)
 parser.add_argument('--datatype', type=str, required=False,default="Image")
 parser.add_argument('--samples', type=str, required=False,default='None')
 parser.add_argument('--learning_rate', type=float, required=False,default=0.0005)
@@ -26,6 +30,23 @@ args = parser.parse_args()
 # LEARNING_RATE = 0.0005
 # BATCH_SIZE = 128
 # EPOCHS = 5
+
+def plot_images_train_test(images, reconstructed_images,title=None):
+    fig = plt.figure(figsize=(15, 3))
+    num_images = len(images)
+    for i, (image, reconstructed_image) in enumerate(zip(images, reconstructed_images)):
+        image = image.squeeze()
+        ax = fig.add_subplot(2, num_images, i + 1)
+        ax.axis("off")
+        ax.imshow(image, cmap="gray_r")
+        reconstructed_image = reconstructed_image.squeeze()
+        ax = fig.add_subplot(2, num_images, i + num_images + 1)
+        ax.axis("off")
+        ax.imshow(reconstructed_image, cmap="gray_r")
+    fig.suptitle(title)
+    plt.show()
+    return fig
+
 
 def plot_images_state_next_state(images, next_images,title=None):
     fig = plt.figure(figsize=(15, 3))
@@ -215,7 +236,7 @@ if __name__ == "__main__":
     print('is_cuda_gpu_available: ',is_cuda_gpu_available)
     print('is_cuda_gpu_min_3: ',is_cuda_gpu_min_3)
     print('built_with_cuda: ',built_with_cuda)
-    print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
+    # print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
     #
     # print("test")
     pathbase = args.pathbase
@@ -235,10 +256,15 @@ if __name__ == "__main__":
         autoencoder.evaluate(x_train)
 
     elif datatype == "Image":
-        samples = 2000
+        samples = 8000
         x_train, y_train = load_dataset_Image_prediction(pathbase=pathbase, samples=samples)
+
+        show_image = False
+        if show_image:
+            plot_images_train_test(x_train, y_train)
+
         autoencoder, history = train_image(x_train, y_train, learning_rate, batch_size, epochs, latent_space_dim=latent_space_dim)
-        autoencoder.evaluate(x_train, y_train)
+        # autoencoder.evaluate(x_train, y_train)
 
     elif datatype == "K":
         x_train = load_dataset_MLP(pathbase=pathbase, samples=samples)

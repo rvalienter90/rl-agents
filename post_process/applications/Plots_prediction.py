@@ -20,11 +20,16 @@ import pickle
 
 import post_process.applications.applications as apps
 import post_process.visualization.visualization_utils as vutils
-from Autoencoder.autoencodertf1 import Autoencoder , DeepAutoencoder
+# from Autoencoder.autoencodertf1 import Autoencoder , DeepAutoencoder
+from Autoencoder.autoencodertf2 import Autoencoder , DeepAutoencoder
+
 from  Autoencoder.train_state_AE import load_dataset_Grid, load_dataset_Image
 SAVE_PATH = os.path.join("..","..","scripts", "out","Generalization_figures")
 # base_path = "D:/out7stokes/nolatent/"
-base_path = "D:/Data/Data/Generalization/Results"
+# DATA_PATH= "E:\Data\Datasets\Image"
+DATA_PATH = "/media/rodolfo/DataSSD/Data/Datasets/Image"
+# base_path = "D:/Data/Data/Generalization/Results"
+base_path= "/media/rodolfo/Data/Data/Data/Generalization/Results"
 SAVE_PATH = os.path.join(base_path,"Generalization_figures")
 
 def main():
@@ -234,6 +239,9 @@ def autoencoder_reconstruction():
     if image:
         model_base_folder= os.path.join(base_path,'autoencoder','models')
         Imagemodel64 = os.path.join(model_base_folder,"Autoencoder_CNN_Image_64_date-2021-10-02-16-11-55")
+        # Imagemodel64_pred = os.path.join(model_base_folder,"Autoencoder_CNN_Image_64_date-2022-02-06-23-28-21")
+        Imagemodel64_pred = os.path.join(model_base_folder,"Autoencoder_CNN_Image_64_date-2022-02-07-00-18-54_Pred")
+
         Imagemodel32= os.path.join(model_base_folder, "Autoencoder_CNN_Image_32_date-2021-10-02-16-11-57")
         Imagemodel16 = os.path.join(model_base_folder, "Autoencoder_CNN_Image_16_date-2021-10-02-16-11-57")
         Imagemodelbegining = os.path.join(model_base_folder, "AutoencoderCNN_Image_beginning")
@@ -245,8 +253,8 @@ def autoencoder_reconstruction():
         sample_obs = select_observations(x_train, num_samples=8)
 
         # models = [Imagemodel64]
-        models = [Imagemodel64, Imagemodel32, Imagemodel16,Imagemodelbegining]
-        names = ['Imagemodel64','Imagemodel32','Imagemodel16','Imagemodelbegining']
+        models = [Imagemodel64, Imagemodel64_pred]
+        names = ['Imagemodel64','Imagemodel64_pred']
         for idx,model in enumerate(models):
             autoencoder = Autoencoder.load(model)
 

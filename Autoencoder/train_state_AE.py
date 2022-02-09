@@ -1,6 +1,6 @@
 from tensorflow.keras.datasets import mnist
 
-from Autoencoder.autoencoder import Autoencoder,DeepAutoencoder
+from Autoencoder.autoencodertf1 import Autoencoder,DeepAutoencoder
 import pickle
 import os, fnmatch
 import numpy as np
