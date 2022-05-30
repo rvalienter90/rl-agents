@@ -46,12 +46,15 @@ cd /home/rvalienteromero/Coop/autoencoder/
 
 echo
 common=""
-common+="python3 train_state_AE.py"
+common+="python3 train_state_AE_prediction.py"
 # train
 # common+=" --latent_space_dim 16"
-common+=" --pathbase  /home/rvalienteromero/Coop/autoencoder/Dataset/Kinematics"
-common+=" --datatype K"
-common+=" --samples 100 "
+common+=" --pathbase  /home/rvalienteromero/Coop/autoencoder/Dataset/Image"
+common+=" --datatype Image"
+#common+=" --pathbase  /home/rvalienteromero/Coop/autoencoder/Dataset/Kinematics"
+#common+=" --datatype K"
+#common+=" --samples 100 "
+common+=" --samples None "
 common+=" --learning_rate 0.0005"
 common+=" --batch_size 128"
 common+=" --epochs 5"

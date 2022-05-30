@@ -21,15 +21,16 @@ import pickle
 import post_process.applications.applications as apps
 import post_process.visualization.visualization_utils as vutils
 # from Autoencoder.autoencodertf1 import Autoencoder , DeepAutoencoder
-from Autoencoder.autoencodertf2 import Autoencoder , DeepAutoencoder
+from autoencoder.autoencodertf2 import Autoencoder , DeepAutoencoder
 
-from  Autoencoder.train_state_AE import load_dataset_Grid, load_dataset_Image
+from  autoencoder.train_state_AE import load_dataset_Grid, load_dataset_Image
+from  autoencoder.train_state_AE_prediction import load_dataset_Image_prediction
 SAVE_PATH = os.path.join("..","..","scripts", "out","Generalization_figures")
 # base_path = "D:/out7stokes/nolatent/"
-# DATA_PATH= "E:\Data\Datasets\Image"
-DATA_PATH = "/media/rodolfo/DataSSD/Data/Datasets/Image"
-# base_path = "D:/Data/Data/Generalization/Results"
-base_path= "/media/rodolfo/Data/Data/Data/Generalization/Results"
+DATA_PATH= "E:\Data\Datasets\Image"
+# DATA_PATH = "/media/rodolfo/DataSSD/Data/Datasets/Image"
+base_path = "D:/Data/Data/Prediction/Results"
+# base_path= "/media/rodolfo/Data/Data/Data/Generalization/Results"
 SAVE_PATH = os.path.join(base_path,"Generalization_figures")
 
 def main():
@@ -43,9 +44,11 @@ def main():
 
     # transfer_learning()
     # barplot_compare()
-    autoencoder_reconstruction()
+    # autoencoder_filters_and_features()
+    # autoencoder_reconstruction()
     # autoencoder_loss()
-    # autoencoder_reconstruction_chain()
+    autoencoder_reconstruction_chain()
+    # autoencoder_reconstruction_chain_continuos()
     # adaptation_compare()
     # adaptation_compare_trajectories()
 
@@ -178,48 +181,79 @@ def autoencoder_reconstruction_chain():
 
 
     if image:
-        model_base_folder= os.path.join(base_path,'autoencoder','models')
-        Imagemodel64 = os.path.join(model_base_folder,"Autoencoder_CNN_Image_64_date-2021-10-02-16-11-55")
+        # model_base_folder= os.path.join(base_path,'autoencoder','models')
+        # Imagemodel64 = os.path.join(model_base_folder,"Autoencoder_CNN_Image_64_date-2021-10-02-16-11-55")
+
+        model_base_folder_pred = os.path.join(base_path, 'autoencoder', 'modelpredictions')
+        Imagemodel64_pred2 = os.path.join(model_base_folder_pred,
+                                          "Autoencoder_CNN_Image_64_date-2022-02-08-23-06-11")
+
+        model_base_folder_predv2 = os.path.join(base_path, 'autoencoder', 'modelpredictionsv2')
+        Imagemodel2048_pred2 = os.path.join(model_base_folder_predv2,
+                                            "Autoencoder_CNN_Image_2048_date-2022-02-13-14-49-18")
+
+        Imagemodel1024_fast = os.path.join(model_base_folder_predv2,
+                                           "Autoencoder_CNN_Image_1024_date-2022-02-13-14-41-11")
 
 
-        pathbase = os.path.join(base_path, 'autoencoder', 'datasetsamples')
+        # pathbase = os.path.join(base_path, 'autoencoder', 'datasetsamples','multi')
+        pathbase = os.path.join(base_path, 'autoencoder', 'datasetsamples','fast')
         # x_train = load_dataset_Image(pathbase=pathbase, samples=50)
-        x_train = load_dataset_Image(pathbase=pathbase, fixed_index=[i+1 for i in range(40)])
+        # x_train = load_dataset_Image(pathbase=pathbase, fixed_index=[i+1 for i in range(40)])
+
+        # x_train, y_train = load_dataset_Image_prediction(pathbase=pathbase, samples=50)
+        x_train, y_train = load_dataset_Image_prediction(pathbase=pathbase, fixed_index=[i+1 for i in range(40)])
 
         num_sample_images_to_show = 8
         # sample_obs = select_observations(x_train, num_samples=1)
-        sample_obs = select_observations(x_train, fixed_index=[100])
+        # sample_obs = select_observations(x_train, fixed_index=[100])
+        sample_obs_idxs = select_observations_idxs(x_train, fixed_index=[50]) # 2 , 30, 40 #50
+        sample_obs_xtrain = x_train[sample_obs_idxs]
+        sample_obs_ytrain = y_train[sample_obs_idxs]
+
 
         # models = [Imagemodel64]
-        models = [Imagemodel64]
-        names = ['Imagemodel64']
+        models = [Imagemodel1024_fast]
+        names = ['Imagemodel1024_fast']
         for idx,model in enumerate(models):
             autoencoder = Autoencoder.load(model)
 
-            reconstructed_images, latent_representations = autoencoder.reconstruct(sample_obs)
+            reconstructed_images, latent_representations = autoencoder.reconstruct(sample_obs_xtrain)
             title = names[idx] + '_latent_representations'
             latent_size = len(latent_representations[0])
-            latent_images = plot_reconstructed_images(sample_obs, latent_representations.reshape(1, 8,int(latent_size/8)),title)
+            # latent_images = plot_reconstructed_images(sample_obs, latent_representations.reshape(1, 8,int(latent_size/8)),title)
+            latent_images_fig = plot_state_reconstructed_nextstate(sample_obs_xtrain, sample_obs_ytrain,
+                                                                   latent_representations.reshape(1, 8,int(latent_size / 8)),title)
+
             title = names[idx] + '_reconstructed_images'
-            reconstructed_images_fig = plot_reconstructed_images(sample_obs, reconstructed_images,title)
+            # reconstructed_images_fig = plot_reconstructed_images(sample_obs, reconstructed_images,title)
+            reconstructed_images_fig = plot_state_reconstructed_nextstate(sample_obs_xtrain,sample_obs_ytrain, reconstructed_images, title)
+
             figname = 'Gen_Fig_B_latent_representations' + names[idx]
-            latent_images.savefig(os.path.join(SAVE_PATH,figname))
+            latent_images_fig.savefig(os.path.join(SAVE_PATH,figname))
             figname = 'Gen_Fig_B_reconstructed_images' + names[idx]
             reconstructed_images_fig.savefig(os.path.join(SAVE_PATH, figname))
-        num_steps = 20
+        num_steps = 6
         reconstructed_images_chain_fig = plt.figure(figsize=(3, num_steps))
 
-        image = sample_obs.squeeze()
+        image = sample_obs_xtrain.squeeze()
         ax = reconstructed_images_chain_fig.add_subplot(num_steps, 1, 1)
         ax.axis("off")
         ax.imshow(image, cmap="gray_r")
-        reconstructed_image = reconstructed_images.squeeze()
+
+        next_state = sample_obs_ytrain.squeeze()
         ax = reconstructed_images_chain_fig.add_subplot(num_steps, 1, 2)
+        ax.axis("off")
+        ax.imshow(next_state, cmap="gray_r")
+
+
+        reconstructed_image = reconstructed_images.squeeze()
+        ax = reconstructed_images_chain_fig.add_subplot(num_steps, 1, 3)
         ax.axis("off")
         ax.imshow(reconstructed_image, cmap="gray_r")
 
 
-        for i in range(num_steps-2):
+        for i in range(num_steps-3):
             reconstructed_images, new_latent_representations = autoencoder.reconstruct(reconstructed_images)
             reconstructed_image = reconstructed_images.squeeze()
             ax = reconstructed_images_chain_fig.add_subplot(num_steps,1, i + 3)
@@ -229,6 +263,108 @@ def autoencoder_reconstruction_chain():
         reconstructed_images_chain_fig.suptitle("reconstructed_images_chain_fig")
         reconstructed_images_chain_fig.savefig(os.path.join(SAVE_PATH, "reconstructed_images_chain_fig"))
 
+def autoencoder_reconstruction_chain_continuos():
+    MLP = False
+    Grid = False
+    image = True
+
+
+    if image:
+        # model_base_folder= os.path.join(base_path,'autoencoder','models')
+        # Imagemodel64 = os.path.join(model_base_folder,"Autoencoder_CNN_Image_64_date-2021-10-02-16-11-55")
+
+        model_base_folder_pred = os.path.join(base_path, 'autoencoder', 'modelpredictions')
+        model_base_folder_predv2 = os.path.join(base_path, 'autoencoder', 'modelpredictionsv2')
+        Imagemodel64_pred2 = os.path.join(model_base_folder_pred,
+                                          "Autoencoder_CNN_Image_64_date-2022-02-08-23-06-11")
+
+
+        Imagemodel2048_pred2 = os.path.join(model_base_folder_predv2,
+                                          "Autoencoder_CNN_Image_2048_date-2022-02-13-14-49-18")
+
+        Imagemodel1024_fast = os.path.join(model_base_folder_predv2,
+                                            "Autoencoder_CNN_Image_1024_date-2022-02-13-14-41-11")
+
+        # pathbase = os.path.join(base_path, 'autoencoder', 'datasetsamples','multi')
+        pathbase = os.path.join(base_path, 'autoencoder', 'datasetsamples','fast')
+        # x_train = load_dataset_Image(pathbase=pathbase, samples=50)
+        # x_train = load_dataset_Image(pathbase=pathbase, fixed_index=[i+1 for i in range(40)])
+
+        # x_train, y_train = load_dataset_Image_prediction(pathbase=pathbase, samples=50)
+        x_train, y_train = load_dataset_Image_prediction(pathbase=pathbase, fixed_index=[i+1 for i in range(40)])
+
+        num_sample_images_to_show = 8
+        # sample_obs = select_observations(x_train, num_samples=1)
+        # sample_obs = select_observations(x_train, fixed_index=[100])
+
+        sample_obs_idxs = select_observations_idxs(x_train, fixed_index=[2])
+        sample_obs_xtrain = x_train[sample_obs_idxs]
+        sample_obs_ytrain = y_train[sample_obs_idxs]
+
+
+        # models = [Imagemodel64]
+        models = [Imagemodel1024_fast]
+        names = ['Imagemodel1024_fast']
+        for idx,model in enumerate(models):
+            autoencoder = Autoencoder.load(model)
+
+            reconstructed_images, latent_representations = autoencoder.reconstruct(sample_obs_xtrain)
+            title = names[idx] + '_latent_representations'
+            latent_size = len(latent_representations[0])
+            # latent_images = plot_reconstructed_images(sample_obs, latent_representations.reshape(1, 8,int(latent_size/8)),title)
+            latent_images_fig = plot_state_reconstructed_nextstate(sample_obs_xtrain, sample_obs_ytrain,
+                                                                   latent_representations.reshape(1, 8,int(latent_size / 8)),title)
+
+            title = names[idx] + '_reconstructed_images'
+            # reconstructed_images_fig = plot_reconstructed_images(sample_obs, reconstructed_images,title)
+            reconstructed_images_fig = plot_state_reconstructed_nextstate(sample_obs_xtrain,sample_obs_ytrain, reconstructed_images, title)
+
+            figname = 'Gen_Fig_B_latent_representations' + names[idx]
+            latent_images_fig.savefig(os.path.join(SAVE_PATH,figname))
+            figname = 'Gen_Fig_B_reconstructed_images' + names[idx]
+            reconstructed_images_fig.savefig(os.path.join(SAVE_PATH, figname))
+
+        num_steps = 8
+        num_cols =2
+        start_selection =[2] # 2 , 30, 40 #50
+        reconstructed_images_chain_fig = plt.figure(figsize=(3, num_steps))
+
+        image = x_train[start_selection].squeeze()
+        ax = reconstructed_images_chain_fig.add_subplot(num_steps, 2, 1)
+        ax.axis("off")
+        ax.imshow(image, cmap="gray_r")
+
+        next_state = y_train[start_selection].squeeze()
+        ax = reconstructed_images_chain_fig.add_subplot(num_steps, 2, num_cols +1)
+        ax.axis("off")
+        ax.imshow(next_state, cmap="gray_r")
+
+        state = x_train[start_selection]
+        reconstructed_images, latent_representations = autoencoder.reconstruct(state)
+        reconstructed_image = reconstructed_images.squeeze()
+        ax = reconstructed_images_chain_fig.add_subplot(num_steps, 2, num_cols + 2)
+        ax.axis("off")
+        ax.imshow(reconstructed_image, cmap="gray_r")
+
+
+        for i in range(num_steps-3):
+            selection = [start_selection[0] + 1 + i]
+            state = x_train[selection]
+            next_state = y_train[selection].squeeze()
+            ax = reconstructed_images_chain_fig.add_subplot(num_steps, 2, (i+2)*num_cols + 1)
+            ax.axis("off")
+            ax.imshow(next_state, cmap="gray_r")
+
+            reconstructed_images, latent_representations = autoencoder.reconstruct(state)
+            reconstructed_image = reconstructed_images.squeeze()
+            ax = reconstructed_images_chain_fig.add_subplot(num_steps, 2, (i+2)*num_cols + 2)
+            ax.axis("off")
+            ax.imshow(reconstructed_image, cmap="gray_r")
+
+
+
+        reconstructed_images_chain_fig.suptitle("reconstructed_images_chain_continuos_fig")
+        reconstructed_images_chain_fig.savefig(os.path.join(SAVE_PATH, "reconstructed_images_chain_continuos_fig"))
 
 def autoencoder_reconstruction():
     MLP = False
@@ -239,35 +375,71 @@ def autoencoder_reconstruction():
     if image:
         model_base_folder= os.path.join(base_path,'autoencoder','models')
         Imagemodel64 = os.path.join(model_base_folder,"Autoencoder_CNN_Image_64_date-2021-10-02-16-11-55")
-        # Imagemodel64_pred = os.path.join(model_base_folder,"Autoencoder_CNN_Image_64_date-2022-02-06-23-28-21")
-        Imagemodel64_pred = os.path.join(model_base_folder,"Autoencoder_CNN_Image_64_date-2022-02-07-00-18-54_Pred")
-
-        Imagemodel32= os.path.join(model_base_folder, "Autoencoder_CNN_Image_32_date-2021-10-02-16-11-57")
+        Imagemodel32 = os.path.join(model_base_folder, "Autoencoder_CNN_Image_32_date-2021-10-02-16-11-57")
         Imagemodel16 = os.path.join(model_base_folder, "Autoencoder_CNN_Image_16_date-2021-10-02-16-11-57")
         Imagemodelbegining = os.path.join(model_base_folder, "AutoencoderCNN_Image_beginning")
+        # Imagemodel64_pred = os.path.join(model_base_folder,"Autoencoder_CNN_Image_64_date-2022-02-06-23-28-21")
+        model_base_folder_pred = os.path.join(base_path, 'autoencoder', 'modelpredictions')
+        Imagemodel64_pred = os.path.join(model_base_folder_pred,"Autoencoder_CNN_Image_64_date-2022-02-07-00-18-54_Pred")
+        Imagemodel64_pred2 = os.path.join(model_base_folder_pred,
+                                         "Autoencoder_CNN_Image_64_date-2022-02-08-22-57-56")
+        Imagemodel64_pred3 = os.path.join(model_base_folder_pred,
+                                         "Autoencoder_CNN_Image_64_date-2022-02-08-23-06-11")
+        Imagemodel64_pred4 = os.path.join(model_base_folder_pred,
+                                         "Autoencoder_CNN_Image_64_date-2022-02-08-23-06-12")
+
+        Imagemodel128_pred = os.path.join(model_base_folder_pred,"Autoencoder_CNN_Image_128_date-2022-02-08-23-14-34")
+        Imagemodel128_pred2 = os.path.join(model_base_folder_pred,"Autoencoder_CNN_Image_128_date-2022-02-08-23-14-35")
+
+        Imagemodel256_pred = os.path.join(model_base_folder_pred,"Autoencoder_CNN_Image_256_date-2022-02-08-23-14-37")
+        Imagemodel256_pred2 = os.path.join(model_base_folder_pred, "Autoencoder_CNN_Image_256_date-2022-02-08-23-43-43")
+        Imagemodel256_pred3 = os.path.join(model_base_folder_pred, "Autoencoder_CNN_Image_256_date-2022-02-08-23-43-45")
+
+        Imagemodel512_pred = os.path.join(model_base_folder_pred,"Autoencoder_CNN_Image_512_date-2022-02-08-23-14-37")
+        Imagemodel512_pred2 = os.path.join(model_base_folder_pred, "Autoencoder_CNN_Image_512_date-2022-02-08-23-17-44")
+        Imagemodel512_pred3= os.path.join(model_base_folder_pred, "Autoencoder_CNN_Image_512_date-2022-02-08-23-19-10")
+        Imagemodel512_pred4 = os.path.join(model_base_folder_pred, "Autoencoder_CNN_Image_512_date-2022-02-08-23-29-36")
+
+
+        Imagemodel1024_pred = os.path.join(model_base_folder_pred, "Autoencoder_CNN_Image_1024_date-2022-02-08-23-46-45")
 
         pathbase = os.path.join(base_path, 'autoencoder', 'datasetsamples')
-        x_train = load_dataset_Image(pathbase=pathbase, samples=50)
-
+        # x_train = load_dataset_Image(pathbase=pathbase, samples=50)
+        x_train,y_train = load_dataset_Image_prediction(pathbase=pathbase, samples=50)
         num_sample_images_to_show = 8
-        sample_obs = select_observations(x_train, num_samples=8)
+        sample_obs_idxs= select_observations_idxs(x_train, num_samples=8)
+        sample_obs_xtrain = x_train[sample_obs_idxs]
+        sample_obs_ytrain = y_train[sample_obs_idxs]
+        # sample_obs_xtrain = select_observations(x_train, fixed_index=[100]) #current state
+        # sample_obs_ytrain = select_observations(y_train, num_samples=8) # next state
 
         # models = [Imagemodel64]
-        models = [Imagemodel64, Imagemodel64_pred]
-        names = ['Imagemodel64','Imagemodel64_pred']
+        models = [Imagemodel64, Imagemodel64_pred,Imagemodel64_pred2,Imagemodel64_pred3,Imagemodel64_pred4,
+                  Imagemodel128_pred,Imagemodel128_pred2,Imagemodel256_pred,Imagemodel256_pred2,Imagemodel256_pred3,
+                  Imagemodel512_pred,Imagemodel512_pred2,Imagemodel512_pred3,Imagemodel512_pred4,
+                  Imagemodel1024_pred]
+        names = ['Imagemodel64','Imagemodel64_pred','Imagemodel64_pred2','Imagemodel64_pred3','Imagemodel64_pred4',
+                 'Imagemodel128_pred', 'Imagemodel128_pred2', 'Imagemodel256_pred', 'Imagemodel256_pred2', 'Imagemodel256_pred3',
+                  'Imagemodel512_pred','Imagemodel512_pred2','Imagemodel512_pred3','Imagemodel512_pred4',
+                 'Imagemodel1024_pred']
         for idx,model in enumerate(models):
             autoencoder = Autoencoder.load(model)
 
-            reconstructed_images, latent_representations = autoencoder.reconstruct(sample_obs)
+            # reconstructed_images, latent_representations = autoencoder.reconstruct(sample_obs)
+            reconstructed_images, latent_representations = autoencoder.reconstruct(sample_obs_xtrain)
+
             title = names[idx] + '_latent_representations'
             latent_size = len(latent_representations[0])
-            latent_images = plot_reconstructed_images(sample_obs, latent_representations.reshape(8, 8,int(latent_size/8)),title)
+            # latent_images = plot_reconstructed_images(sample_obs, latent_representations.reshape(8, 8,int(latent_size/8)),title)
+            latent_images_fig = plot_state_reconstructed_nextstate(sample_obs_xtrain,sample_obs_ytrain,
+                                                      latent_representations.reshape(8, 8, int(latent_size / 8)), title)
             title = names[idx] + '_reconstructed_images'
-            reconstructed_images = plot_reconstructed_images(sample_obs, reconstructed_images,title)
+            # reconstructed_images_fig = plot_reconstructed_images(sample_obs, reconstructed_images,title)
+            reconstructed_images_fig = plot_state_reconstructed_nextstate(sample_obs_xtrain,sample_obs_ytrain, reconstructed_images, title)
             figname = 'Gen_Fig_B_latent_representations' + names[idx]
-            latent_images.savefig(os.path.join(SAVE_PATH,figname))
+            latent_images_fig.savefig(os.path.join(SAVE_PATH,figname))
             figname = 'Gen_Fig_B_reconstructed_images' + names[idx]
-            reconstructed_images.savefig(os.path.join(SAVE_PATH, figname))
+            reconstructed_images_fig.savefig(os.path.join(SAVE_PATH, figname))
 
     if MLP:
         MLPmodel = "model/DeepAutoencoder_MLPdate-2021-09-29-19-24-15"
@@ -288,6 +460,226 @@ def autoencoder_reconstruction():
         x_train = load_dataset_Grid(samples=2000)
         sample_obs = select_observations(x_train, num_samples=2)
         reconstructed_obs, _ = autoencoderGrid.reconstruct(sample_obs)
+
+def autoencoder_filters_and_features():
+    image = True
+    from keras.applications.vgg16 import preprocess_input
+    from keras.preprocessing.image import load_img
+    from keras.preprocessing.image import img_to_array
+    from keras.models import Model
+
+    if image:
+        model_base_folder= os.path.join(base_path,'autoencoder','models')
+        Imagemodel64 = os.path.join(model_base_folder,"Autoencoder_CNN_Image_64_date-2021-10-02-16-11-55")
+        Imagemodel32 = os.path.join(model_base_folder, "Autoencoder_CNN_Image_32_date-2021-10-02-16-11-57")
+        Imagemodel16 = os.path.join(model_base_folder, "Autoencoder_CNN_Image_16_date-2021-10-02-16-11-57")
+        Imagemodelbegining = os.path.join(model_base_folder, "AutoencoderCNN_Image_beginning")
+        model_base_folder_pred = os.path.join(base_path, 'autoencoder', 'modelpredictions')
+
+        Imagemodel64_pred = os.path.join(model_base_folder_pred,"Autoencoder_CNN_Image_64_date-2022-02-07-00-18-54_Pred")
+
+
+        pathbase = os.path.join(base_path, 'autoencoder', 'datasetsamples')
+        # x_train = load_dataset_Image(pathbase=pathbase, samples=50)
+        # x_train,y_train = load_dataset_Image_prediction(pathbase=pathbase, samples=50)
+        num_sample_images_to_show = 8
+        # sample_obs_idxs= select_observations_idxs(x_train, num_samples=8)
+        x_train, y_train = load_dataset_Image_prediction(pathbase=pathbase, fixed_index=[10,11,12,13,14,15])
+        sample_obs_idxs = [41] # 1 is hiwghay, 21 turn, 41 merge
+        sample_obs_xtrain = x_train[sample_obs_idxs]
+        sample_obs_ytrain = y_train[sample_obs_idxs]
+        # sample_obs_xtrain = select_observations(x_train, fixed_index=[100]) #current state
+        # sample_obs_ytrain = select_observations(y_train, num_samples=8) # next state
+
+        # models = [Imagemodel64]
+        # models = [Imagemodel64]
+        # names = ['Imagemodel64']
+        models = [Imagemodel64_pred]
+        names = ['Imagemodel64_pred']
+        for idx,model_fn in enumerate(models):
+            autoencoder = Autoencoder.load(model_fn)
+            model = autoencoder.model
+            model.summary()
+            # for layer in model.layers:
+            #     # check for convolutional layer
+            #     # if 'conv' not in layer.name:
+            #     #     continue
+            #     filters, biases = layer.get_weights()
+            #     print(layer.name, filters.shape)
+            encoder_layers = model.layers[1]
+            for l in [1,4,7,10]:
+                filters, biases = encoder_layers.layers[l].get_weights()  #1,4,7,10
+                print(encoder_layers.name, filters.shape)
+
+            decoder_layers = model.layers[2]
+            for l in [3,6,9,12]:
+                filters, biases = decoder_layers.layers[l].get_weights()  # 3,6,9,12
+                print(decoder_layers.name, filters.shape)
+
+            # normalize filter values to 0-1 so we can visualize them
+            f_min, f_max = filters.min(), filters.max()
+            filters = (filters - f_min) / (f_max - f_min)
+            # plot first few filters
+            n_filters, ix = 6, 1
+            for i in range(n_filters):
+                # get the filter
+                f = filters[:, :, :, i]
+                # plot each channel separately
+                for j in range(1):
+                    # specify subplot and turn of axis
+                    ax = plt.subplot(n_filters, 1, ix)
+                    ax.set_xticks([])
+                    ax.set_yticks([])
+                    # plot filter channel in grayscale
+                    plt.imshow(f[:, :, j], cmap='gray')
+                    ix += 1
+            # show the figure
+            plt.show()
+
+            plt.imshow(sample_obs_xtrain[0,:,:,0], cmap='gray')
+            plot_encoder_features = True
+            if plot_encoder_features:
+                plt.show()
+                encoder_layers = model.layers[1]
+                for l in [1, 4, 7, 10,11,12]:
+
+                    model_internal = Model(inputs=model.inputs, outputs=encoder_layers.layers[l].output)
+
+                    # get feature map for first hidden layer
+                    feature_maps = model_internal.predict(sample_obs_xtrain)
+                    # plot all 64 maps in an 8x8 squares
+                    feature_maps_shape = feature_maps.shape
+
+                    n_features = feature_maps_shape[3]
+                    display_grid = np.zeros((feature_maps_shape[1], feature_maps_shape[2] * n_features))
+                    for i in range(n_features):
+                        x = feature_maps[0, :, :, i]
+                        x -= x.mean()
+                        x /= x.std()
+                        x *= 64
+                        x += 128
+                        x = np.clip(x, 0, 255).astype('uint8')
+                        # Tile each filter into a horizontal grid
+                        display_grid[:, i * feature_maps_shape[2]: (i + 1) * feature_maps_shape[2]] = x
+
+                    scale = 20. / n_features
+                    plt.figure(figsize=(scale * n_features, scale))
+                    # l_name =decoder_layers.layers[l].name
+                    # plt.title(l_name)
+                    plt.grid(False)
+                    plt.imshow(display_grid, aspect='auto', cmap='viridis')
+                    plt.show()
+
+                    plot_in_matrix = False
+                    if plot_in_matrix:
+                        square = int(math.sqrt(feature_maps_shape[3]))
+                        ix = 1
+                        for _ in range(square):
+                            for _ in range(square):
+                                # specify subplot and turn of axis
+                                ax = plt.subplot(square, square, ix)
+                                ax.set_xticks([])
+                                ax.set_yticks([])
+                                # plot filter channel in grayscale
+                                processing = True
+                                if processing:
+                                    x = feature_maps[0, :, :, ix - 1]
+                                    x -= x.mean()
+                                    x /= x.std()
+                                    x *= 64
+                                    x += 128
+                                    x = np.clip(x, 0, 255).astype('uint8')
+                                    # Tile each filter into a horizontal grid
+                                    plt.imshow(x, cmap='viridis')
+                                    # plt.imshow(display_grid, aspect='auto', cmap='viridis')
+                                else:
+                                    plt.imshow(feature_maps[0, :, :, ix - 1], cmap='gray')
+                                ix += 1
+                        # show the figure
+                        plt.show()
+
+            # reconstructed_images, latent_representations = autoencoder.reconstruct(sample_obs)
+            reconstructed_images, latent_representations = autoencoder.reconstruct(sample_obs_xtrain)
+
+            plt.imshow(latent_representations, cmap='gray')
+            plt.show()
+
+            decoder_layers = model.layers[2]
+            for l in [3, 6, 9, 10,11,12,13]:
+
+                model_internal = Model(inputs=decoder_layers.inputs, outputs=decoder_layers.layers[l].output)
+
+                # get feature map for first hidden layer
+                feature_maps = model_internal.predict(latent_representations)
+                # plot all 64 maps in an 8x8 squares
+                feature_maps_shape = feature_maps.shape
+
+                n_features = feature_maps_shape[3]
+                display_grid = np.zeros((feature_maps_shape[1], feature_maps_shape[2] * n_features))
+                for i in range(n_features):
+                    x = feature_maps[0, :, :, i]
+                    x -= x.mean()
+                    x /= x.std()
+                    x *= 64
+                    x += 128
+                    x = np.clip(x, 0, 255).astype('uint8')
+                    # Tile each filter into a horizontal grid
+                    display_grid[:, i * feature_maps_shape[2]: (i + 1) * feature_maps_shape[2]] = x
+
+                scale = 20. / n_features
+                plt.figure(figsize=(scale * n_features, scale))
+                # l_name =decoder_layers.layers[l].name
+                # plt.title(l_name)
+                plt.grid(False)
+                plt.imshow(display_grid, aspect='auto', cmap='viridis')
+                plt.show()
+
+                plot_in_matrix = False
+                if plot_in_matrix:
+                    square = int(math.sqrt(feature_maps_shape[3]))
+                    ix = 1
+                    for _ in range(square):
+                        for _ in range(square):
+                            # specify subplot and turn of axis
+                            ax = plt.subplot(square, square, ix)
+                            ax.set_xticks([])
+                            ax.set_yticks([])
+                            # plot filter channel in grayscale
+                            processing = True
+                            if processing:
+                                x = feature_maps[0, :, :, ix - 1]
+                                x -= x.mean()
+                                x /= x.std()
+                                x *= 64
+                                x += 128
+                                x = np.clip(x, 0, 255).astype('uint8')
+                                # Tile each filter into a horizontal grid
+                                plt.imshow(x, cmap='viridis')
+                                # plt.imshow(display_grid, aspect='auto', cmap='viridis')
+                            else:
+                                plt.imshow(feature_maps[0, :, :, ix - 1], cmap='gray')
+                            ix += 1
+                    # show the figure
+                    plt.show()
+
+
+            plt.imshow(reconstructed_images[0,:,:,0], cmap='gray')
+            plt.show()
+            # title = names[idx] + '_latent_representations'
+            # latent_size = len(latent_representations[0])
+            # # latent_images = plot_reconstructed_images(sample_obs, latent_representations.reshape(8, 8,int(latent_size/8)),title)
+            # latent_images_fig = plot_state_reconstructed_nextstate(sample_obs_xtrain,sample_obs_ytrain,
+            #                                           latent_representations.reshape(8, 8, int(latent_size / 8)), title)
+            # title = names[idx] + '_reconstructed_images'
+            # # reconstructed_images_fig = plot_reconstructed_images(sample_obs, reconstructed_images,title)
+            # reconstructed_images_fig = plot_state_reconstructed_nextstate(sample_obs_xtrain,sample_obs_ytrain, reconstructed_images, title)
+            # figname = 'Gen_Fig_B_latent_representations' + names[idx]
+            # latent_images_fig.savefig(os.path.join(SAVE_PATH,figname))
+            # figname = 'Gen_Fig_B_reconstructed_images' + names[idx]
+            # reconstructed_images_fig.savefig(os.path.join(SAVE_PATH, figname))
+
+
+
 def plot_reconstructed_images(images, reconstructed_images,title=None):
     fig = plt.figure(figsize=(15, 3))
     num_images = len(images)
@@ -303,6 +695,27 @@ def plot_reconstructed_images(images, reconstructed_images,title=None):
     fig.suptitle(title)
     return fig
     # plt.show()
+
+def plot_state_reconstructed_nextstate(states,next_states, reconstructed_next_states,title=None):
+    fig = plt.figure(figsize=(15, 3))
+    num_images = len(states)
+    for i, (state,next_state, reconstructed_next_state) in enumerate(zip(states,next_states, reconstructed_next_states)):
+        state = state.squeeze()
+        ax = fig.add_subplot(3, num_images, i + 1)
+        ax.axis("off")
+        ax.imshow(state, cmap="gray_r")
+
+        next_state = next_state.squeeze()
+        ax = fig.add_subplot(3, num_images, i + num_images + 1)
+        ax.axis("off")
+        ax.imshow(next_state, cmap="gray_r")
+
+        reconstructed_next_state = reconstructed_next_state.squeeze()
+        ax = fig.add_subplot(3, num_images, i + 2*num_images + 1)
+        ax.axis("off")
+        ax.imshow(reconstructed_next_state, cmap="gray_r")
+    fig.suptitle(title)
+    return fig
 
 def plot_images_encoded_in_latent_space(latent_representations, sample_labels):
     plt.figure(figsize=(10, 10))
@@ -320,6 +733,13 @@ def select_observations(obs, num_samples=10, fixed_index=None):
     else:
         sample_index = np.random.choice(range(len(obs)), num_samples)
     return obs[sample_index]
+
+def select_observations_idxs(obs, num_samples=10, fixed_index=None):
+    if fixed_index:
+        sample_index = fixed_index
+    else:
+        sample_index = np.random.choice(range(len(obs)), num_samples)
+    return sample_index
 
 def adaptation_compare():
     n_episode = 900

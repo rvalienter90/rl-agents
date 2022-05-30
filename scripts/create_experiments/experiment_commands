@@ -127,5 +127,23 @@ configs/experiments/Multienv/exp_base_interception.json
 "D:\Rodolfo\out"
 
 
-
-
+Multienv recover , save data
+evaluate
+--no-display
+--test
+--episodes_test
+10000
+--video_save_freq
+10000
+--model_save_freq
+4000
+--create_episode_log
+--individual_episode_log_level
+2
+--environment
+configs/experiments/Multienv/exp_generalization_256.json
+--name-from-envconfig
+--recover-from
+D:\Data\Data\Prediction\models/k_256_m.tar
+--output_folder
+"D:\Rodolfo\out"

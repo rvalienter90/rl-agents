@@ -81,6 +81,7 @@ class Evaluation(object):
         self.display_env = display_env
 
         # Modifications
+        self.save_dataset_counter = 0
         self.dataset_by_episode =[]
         self.env.options = copy.deepcopy(options)
         self.options = copy.deepcopy(options)
@@ -221,15 +222,19 @@ class Evaluation(object):
                     pass
 
             # End of episode
+            self.env.config['save_dataset'] = True
             if self.env.config['save_dataset']:
                 self.save_dataset(info)
+                self.save_dataset_counter+=1
             duration = time.time() - start_time
             self.after_all_episodes(self.episode, self.rewards, duration)
             self.after_some_episodes(self.episode, self.rewards)
 
     def save_dataset(self,info):
 
-        name = str(info["episode"]) + '.pickle'
+        # name = str(info["episode"]) + '.pickle'
+        name = str( self.save_dataset_counter) + '.pickle'
+
         path = os.path.join(self.run_directory ,'Dataset')
         file = os.path.join(path,name)
         if path is not None:

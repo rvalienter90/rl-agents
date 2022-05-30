@@ -20,8 +20,8 @@ import pickle
 
 import post_process.applications.applications as apps
 import post_process.visualization.visualization_utils as vutils
-from Autoencoder.autoencodertf1 import Autoencoder , DeepAutoencoder
-from  Autoencoder.train_state_AE import load_dataset_Grid, load_dataset_Image
+from autoencoder.autoencodertf1 import Autoencoder , DeepAutoencoder
+from  autoencoder.train_state_AE import load_dataset_Grid, load_dataset_Image
 SAVE_PATH = os.path.join("..","..","scripts", "out","Generalization_figures")
 # base_path = "D:/out7stokes/nolatent/"
 base_path = "D:/Data/Data/Generalization/Results"
