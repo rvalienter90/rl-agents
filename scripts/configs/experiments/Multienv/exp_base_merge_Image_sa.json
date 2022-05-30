@@ -1,0 +1,34 @@
+{
+  "info": "Multi env",
+  "additional_folder_name": "exp_exit",
+  "base_config": "configs/experiments/Multienv/exp_base_multi.json",
+
+  "controlled_vehicles": 1,
+  "observation": {
+    "type": "GrayscaleObservation"
+    },
+  "action": {
+    "type": "DiscreteMetaAction",
+      "action_config": {
+      "type": "DiscreteMetaAction",
+      "longitudinal": true,
+      "fast": false,
+      "lateral": false,
+      "slow": false,
+      "stop": false
+    }
+
+  },
+
+
+    "scenario": {
+    "road_types": [
+      "road_merge"
+    ]
+  },
+    "agent_config": {
+    "model": {
+      "type": "ConvNetAtari"
+    }
+    }
+}
